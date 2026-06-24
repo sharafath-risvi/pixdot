@@ -171,7 +171,7 @@ export function StaffClientContentView() {
     if (!client) return;
     try {
       const api = (await import("../../lib/api.js")).default;
-      const res = await api.get(`/clients/${client.id}/calendar/content`);
+      const res = await api.get(`/api/clients/${client.id}/calendar/content`);
       setStore(res.data.data);
     } catch (err) {
       console.error("Failed to fetch calendar", err);
@@ -187,7 +187,7 @@ export function StaffClientContentView() {
   const handleAdd = async (payload) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.post(`/clients/${client.id}/calendar/content`, payload);
+      await api.post(`/api/clients/${client.id}/calendar/content`, payload);
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to add task.");
@@ -197,7 +197,7 @@ export function StaffClientContentView() {
   const handleUpdate = async (id, payload) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.put(`/clients/${client.id}/calendar/content/${id}`, payload);
+      await api.put(`/api/clients/${client.id}/calendar/content/${id}`, payload);
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to update task.");
@@ -207,7 +207,7 @@ export function StaffClientContentView() {
   const handleDelete = async (id) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.delete(`/clients/${client.id}/calendar/content/${id}`);
+      await api.delete(`/api/clients/${client.id}/calendar/content/${id}`);
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to delete task.");
@@ -246,7 +246,7 @@ export function StaffClientMetaView() {
     if (!client) return;
     try {
       const api = (await import("../../lib/api.js")).default;
-      const res = await api.get(`/clients/${client.id}/calendar/meta`);
+      const res = await api.get(`/api/clients/${client.id}/calendar/meta`);
       setStore(res.data.data);
     } catch (err) {
       console.error("Failed to fetch calendar", err);
@@ -262,7 +262,7 @@ export function StaffClientMetaView() {
   const handleAdd = async (payload) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.post(`/clients/${client.id}/calendar/meta`, payload);
+      await api.post(`/api/clients/${client.id}/calendar/meta`, payload);
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to add campaign.");
@@ -272,7 +272,7 @@ export function StaffClientMetaView() {
   const handleUpdate = async (id, payload) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.put(`/clients/${client.id}/calendar/meta/${id}`, payload);
+      await api.put(`/api/clients/${client.id}/calendar/meta/${id}`, payload);
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to update campaign.");
@@ -282,7 +282,7 @@ export function StaffClientMetaView() {
   const handleDelete = async (id) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.delete(`/clients/${client.id}/calendar/meta/${id}`);
+      await api.delete(`/api/clients/${client.id}/calendar/meta/${id}`);
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to delete campaign.");

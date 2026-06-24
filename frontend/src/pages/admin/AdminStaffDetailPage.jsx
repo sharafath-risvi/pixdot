@@ -53,7 +53,7 @@ export default function AdminStaffDetailPage() {
   const handleSave = async (patch) => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.put(`/staff/${staff.id}`, patch);
+      await api.put(`/api/staff/${staff.id}`, patch);
       await fetchStaff();
 
       setEditing(false);
@@ -73,7 +73,7 @@ export default function AdminStaffDetailPage() {
   const handleDelete = async () => {
     try {
       const api = (await import("../../lib/api.js")).default;
-      await api.delete(`/staff/${staff.id}`);
+      await api.delete(`/api/staff/${staff.id}`);
       await fetchStaff();
       navigate("/admin-dashboard/team", { replace: true });
     } catch (error) {

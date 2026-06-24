@@ -76,7 +76,7 @@ export default function ServiceDetails() {
         totalPrice: selectedTotal,
       };
       
-      const res = await api.post("/quotes", payload);
+      const res = await api.post("/api/quotes", payload);
       if (res.data?.success) {
         setSubmitSuccess(true);
       } else {

@@ -94,7 +94,7 @@ export default function AdminLayout() {
         onSubmit={async (newClient) => {
           try {
             const api = (await import("../../lib/api.js")).default;
-            const res = await api.post("/clients", newClient);
+            const res = await api.post("/api/clients", newClient);
             const createdClient = res.data.data;
             await fetchClients(); // refresh context
             setShowAddClient(false);
@@ -112,7 +112,7 @@ export default function AdminLayout() {
         onSubmit={async (staff) => {
           try {
             const api = (await import("../../lib/api.js")).default;
-            await api.post("/staff", staff);
+            await api.post("/api/staff", staff);
             await fetchStaff(); // refresh context
             setShowAddStaff(false);
           } catch (error) {

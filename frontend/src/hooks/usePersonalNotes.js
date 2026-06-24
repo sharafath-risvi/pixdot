@@ -28,7 +28,7 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
     }
     setLoading(true);
     try {
-      const response = await api.get("/notes");
+      const response = await api.get("/api/notes");
       if (response.data.success) {
         setNotes(response.data.data.map(toSimpleNote).filter(Boolean));
       }
@@ -51,7 +51,7 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
       if (!ownerId) return;
       setLoading(true);
       try {
-        await api.post("/notes", {
+        await api.post("/api/notes", {
           title: String(entry.title || "").trim(),
           description: String(entry.description || "").trim(),
           date: entry.date,
@@ -73,7 +73,7 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
       if (!ownerId) return;
       setLoading(true);
       try {
-        await api.put(`/notes/${noteId}`, {
+        await api.put(`/api/notes/${noteId}`, {
           title: entry.title,
           description: entry.description,
           date: entry.date,
@@ -95,7 +95,7 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
       if (!ownerId) return;
       setLoading(true);
       try {
-        await api.delete(`/notes/${noteId}`);
+        await api.delete(`/api/notes/${noteId}`);
         await fetchNotes();
         setError(null);
       } catch (err) {

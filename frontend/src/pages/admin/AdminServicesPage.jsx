@@ -43,7 +43,7 @@ export default function AdminServicesPage() {
   const handleDelete = async () => {
     if (!serviceToDelete) return;
     try {
-      await api.delete(`/services/${serviceToDelete._id}`);
+      await api.delete(`/api/services/${serviceToDelete._id}`);
       toast.success("Service deleted successfully.");
       fetchServices();
     } catch (err) {
@@ -58,10 +58,10 @@ export default function AdminServicesPage() {
   const handleSave = async (payload) => {
     try {
       if (editingService) {
-        await api.put(`/services/${editingService._id}`, payload);
+        await api.put(`/api/services/${editingService._id}`, payload);
         toast.success("Service updated successfully.");
       } else {
-        await api.post("/services", payload);
+        await api.post("/api/services", payload);
         toast.success("Service added successfully.");
       }
       setModalOpen(false);

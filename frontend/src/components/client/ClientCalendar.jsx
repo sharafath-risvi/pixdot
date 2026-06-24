@@ -13,7 +13,7 @@ export default function ClientCalendar() {
       if (!clientId) return;
       try {
         const api = (await import("../../lib/api.js")).default;
-        const res = await api.get(`/clients/${clientId}/calendar/content`);
+        const res = await api.get(`/api/clients/${clientId}/calendar/content`);
         setStore(res.data.data);
       } catch (err) {
         console.error("Failed to fetch calendar", err);

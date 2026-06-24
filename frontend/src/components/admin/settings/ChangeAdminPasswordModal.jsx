@@ -33,7 +33,7 @@ export default function ChangeAdminPasswordModal({ open, mode = "edit", onClose,
       }
       try {
         setLoading(true);
-        await api.put("/auth/change-my-password", {
+        await api.put("/api/auth/change-my-password", {
           currentPassword: oldPassword,
           newPassword: "123456",
         });
@@ -68,7 +68,7 @@ export default function ChangeAdminPasswordModal({ open, mode = "edit", onClose,
 
     try {
       setLoading(true);
-      await api.put("/auth/change-my-password", {
+      await api.put("/api/auth/change-my-password", {
         currentPassword: oldPassword,
         newPassword: next,
       });

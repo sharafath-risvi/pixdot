@@ -212,7 +212,7 @@ export default function AdminSettingsPage() {
         onConfirm={async (password) => {
           if (!portalModal) return;
           try {
-            await api.put(`/auth/change-password/${portalModal.userId}`, { newPassword: password });
+            await api.put(`/api/auth/change-password/${portalModal.userId}`, { newPassword: password });
             showToast(
               portalModal.mode === "reset"
                 ? `${portalModal.name}'s password reset.`

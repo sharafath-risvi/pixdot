@@ -81,7 +81,7 @@ export function WorkspaceProvider({ children }) {
       // Optimistic update
       setStaffSalaryVisibleToSelfState(value);
       const api = (await import("../lib/api.js")).default;
-      await api.put("/settings/staffSalaryVisibleToSelf", { value });
+      await api.put("/api/settings/staffSalaryVisibleToSelf", { value });
     } catch (err) {
       console.error("Failed to update setting:", err);
       // Revert on failure
