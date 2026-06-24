@@ -13,13 +13,13 @@ export default function ClientServicesList({ client, readOnly = false }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const toast = useToast();
-  
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
 
   const fetchServices = async () => {
     try {
-      const res = await api.get("/services");
+      const res = await api.get("/api/services");
       if (res.data.success) {
         // Filter manually if the API returns all, though API can be updated to accept ?clientId=...
         const clientServices = res.data.data.filter(s => s.client?._id === client.id || s.client === client.id);
@@ -87,8 +87,8 @@ export default function ClientServicesList({ client, readOnly = false }) {
 
       {loading ? (
         <div className="dash-empty-container" style={{ padding: "32px 16px" }}>
-           <div className="dash-skeleton" style={{ width: "160px", height: "16px", marginBottom: "8px" }} />
-           <div className="dash-skeleton" style={{ width: "220px", height: "12px" }} />
+          <div className="dash-skeleton" style={{ width: "160px", height: "16px", marginBottom: "8px" }} />
+          <div className="dash-skeleton" style={{ width: "220px", height: "12px" }} />
         </div>
       ) : services.length === 0 ? (
         <div className="dash-empty-container" style={{ padding: "32px 16px" }}>

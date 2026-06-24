@@ -13,7 +13,7 @@ export default function ClientProfile() {
     if (!currentClient) return;
     const fetchServices = async () => {
       try {
-        const res = await api.get("/services");
+        const res = await api.get("/api/services");
         if (res.data.success) {
           setServices(res.data.data);
         }

@@ -15,14 +15,14 @@ export default function AdminServicesPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
-  
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
 
   const fetchServices = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/services");
+      const res = await api.get("/api/services");
       if (res.data.success) setServices(res.data.data);
     } catch (err) {
       console.error("Failed to load services:", err);
@@ -94,9 +94,9 @@ export default function AdminServicesPage() {
 
       {loading ? (
         <div className="dash-empty-container">
-           <div className="dash-skeleton" style={{ width: "48px", height: "48px", borderRadius: "50%", marginBottom: "16px" }} />
-           <div className="dash-skeleton" style={{ width: "160px", height: "16px", marginBottom: "8px" }} />
-           <div className="dash-skeleton" style={{ width: "220px", height: "12px" }} />
+          <div className="dash-skeleton" style={{ width: "48px", height: "48px", borderRadius: "50%", marginBottom: "16px" }} />
+          <div className="dash-skeleton" style={{ width: "160px", height: "16px", marginBottom: "8px" }} />
+          <div className="dash-skeleton" style={{ width: "220px", height: "12px" }} />
         </div>
       ) : services.length === 0 ? (
         <div className="dash-empty-container">
@@ -133,9 +133,9 @@ export default function AdminServicesPage() {
                     {formatInr(svc.price)}
                   </td>
                   <td style={{ padding: "12px 16px" }}>
-                    <span style={{ 
-                      padding: "4px 8px", 
-                      borderRadius: "999px", 
+                    <span style={{
+                      padding: "4px 8px",
+                      borderRadius: "999px",
                       fontSize: "12px",
                       fontWeight: "600",
                       background: svc.status === "Active" ? "#dcfce7" : "#f1f5f9",
@@ -145,13 +145,13 @@ export default function AdminServicesPage() {
                     </span>
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "right", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                    <button 
+                    <button
                       onClick={() => { setEditingService(svc); setModalOpen(true); }}
                       style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer" }}
                     >
                       Edit
                     </button>
-                    <button 
+                    <button
                       onClick={() => confirmDelete(svc)}
                       style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #fee2e2", background: "#fef2f2", color: "#b91c1c", cursor: "pointer" }}
                     >

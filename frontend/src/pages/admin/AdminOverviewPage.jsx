@@ -14,12 +14,12 @@ export default function AdminOverviewPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const [clientsRes, staffRes] = await Promise.all([
-          api.get("/clients"),
-          api.get("/staff")
+          api.get("/api/clients"),
+          api.get("/api/staff")
         ]);
-        
+
         setClientCount(clientsRes.data.data.length);
         setStaffCount(staffRes.data.data.length);
       } catch (err) {
@@ -29,7 +29,7 @@ export default function AdminOverviewPage() {
         setLoading(false);
       }
     };
-    
+
     fetchDashboardData();
   }, []);
 

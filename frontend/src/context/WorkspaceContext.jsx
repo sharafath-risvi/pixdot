@@ -7,7 +7,7 @@ export function WorkspaceProvider({ children }) {
   // Initial state for clients is an empty array until fetched from backend
   const [clients, setClients] = useState([]);
   const [clientsLoading, setClientsLoading] = useState(true);
-  
+
   const [staffMembers, setStaffMembers] = useState([]);
   const [staffLoading, setStaffLoading] = useState(true);
 
@@ -21,8 +21,8 @@ export function WorkspaceProvider({ children }) {
     try {
       setStaffLoading(true);
       const api = (await import("../lib/api.js")).default;
-      const response = await api.get("/staff");
-      const fetchedStaff = response.data.data.map(s => ({...s, id: s._id}));
+      const response = await api.get("/api/staff");
+      const fetchedStaff = response.data.data.map(s => ({ ...s, id: s._id }));
       setStaffMembers(fetchedStaff);
     } catch (err) {
       console.error("Failed to fetch staff from backend:", err);
@@ -42,9 +42,9 @@ export function WorkspaceProvider({ children }) {
     try {
       setClientsLoading(true);
       const api = (await import("../lib/api.js")).default;
-      const response = await api.get("/clients");
+      const response = await api.get("/api/clients");
       // Map MongoDB _id to id to match existing frontend code expectation
-      const fetchedClients = response.data.data.map(c => ({...c, id: c._id}));
+      const fetchedClients = response.data.data.map(c => ({ ...c, id: c._id }));
       setClients(fetchedClients);
     } catch (err) {
       console.error("Failed to fetch clients from backend:", err);
@@ -63,7 +63,7 @@ export function WorkspaceProvider({ children }) {
     if (!isAuthenticated || role !== "admin") return;
     try {
       const api = (await import("../lib/api.js")).default;
-      const response = await api.get("/settings");
+      const response = await api.get("/api/settings");
       if (response.data?.success && response.data?.data) {
         setStaffSalaryVisibleToSelfState(Boolean(response.data.data.staffSalaryVisibleToSelf));
       }
