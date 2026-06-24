@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased bg-slate-50 text-slate-900;
+    font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, Arial, sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-slate-50 text-slate-900;
+    font-family: inherit;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: inherit;
+    letter-spacing: -0.02em;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+
+  img {
+    max-width: 100%;
+    display: block;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}

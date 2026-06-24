@@ -1,0 +1,96 @@
+/* Agency dashboard palette — shared across admin, staff, and client */
+:root {
+  --palette-900: #001d39;
+  --palette-800: #0a4174;
+  --palette-600: #49769f;
+  --palette-500: #4e8ea2;
+  --palette-400: #6ea2b3;
+  --palette-300: #7bbde8;
+  --palette-100: #bdd8e9;
+
+  --dash-text: var(--palette-900);
+  --dash-text-secondary: var(--palette-800);
+  --dash-muted: var(--palette-600);
+  --dash-muted-light: var(--palette-400);
+
+  --dash-accent: var(--palette-800);
+  --dash-accent-hover: var(--palette-900);
+  --dash-accent-soft: rgba(123, 189, 232, 0.28);
+  --dash-accent-ring: rgba(10, 65, 116, 0.35);
+
+  --dash-border: rgba(73, 118, 159, 0.18);
+  --dash-border-strong: rgba(10, 65, 116, 0.15);
+  --dash-surface: rgba(255, 255, 255, 0.96);
+  --dash-surface-muted: rgba(189, 216, 233, 0.35);
+
+  --dash-bg-gradient:
+    radial-gradient(ellipse 80% 50% at 8% -5%, rgba(123, 189, 232, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(189, 216, 233, 0.65) 0%, transparent 50%),
+    linear-gradient(180deg, #e8f4fa 0%, #f4f9fc 45%, #fafcfe 100%);
+
+  --dash-hero-gradient: linear-gradient(135deg, var(--palette-900) 0%, var(--palette-800) 55%, var(--palette-600) 100%);
+  --dash-shadow: 0 10px 30px -20px rgba(0, 29, 57, 0.15);
+  --dash-shadow-lg: 0 20px 40px -24px rgba(0, 29, 57, 0.20);
+}
+
+/* --- Phase 2: Micro-interactions & States --- */
+@keyframes pulse-skeleton {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.dash-skeleton {
+  animation: pulse-skeleton 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: var(--dash-border);
+  border-radius: 8px;
+}
+
+@keyframes modal-pop {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.dash-modal-animate {
+  animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dash-empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  border-radius: 16px;
+  border: 1px dashed var(--dash-border-strong);
+  background: rgba(248, 250, 252, 0.4);
+  margin: 16px 0;
+}
+
+.dash-empty-icon {
+  font-size: 42px;
+  color: var(--dash-muted-light);
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.dash-empty-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--dash-text);
+  margin-bottom: 6px;
+}
+
+.dash-empty-desc {
+  font-size: 0.85rem;
+  color: var(--dash-muted);
+  max-width: 320px;
+}
+
+/* Smooth Table Row Hovers */
+.dash-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.dash-table tbody tr:hover {
+  background-color: var(--dash-surface-muted);
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "brand-creative",
+    "name": "Branding & Creative",
+    "tagline": "Logo, print & brand assets",
+    "icon": "FaPalette",
+    "image": "/services/brand.webp",
+    "pageBackground": ["#fef2f2", "#fecaca"],
+    "options": [{ "id": "quote", "label": "Quote & booking" }]
+  },
+  {
+    "id": "packaging",
+    "name": "Packaging Design",
+    "tagline": "Master, mono & family packs",
+    "icon": "FaBoxOpen",
+    "image": "/services/packaging.webp",
+    "pageBackground": ["#faf5f0", "#e7d3c0"],
+    "options": [{ "id": "quote", "label": "Packages & booking" }]
+  },
+  {
+    "id": "digital-marketing",
+    "name": "Digital Marketing",
+    "tagline": "Ads, plans, page handling & custom",
+    "icon": "FaBullhorn",
+    "image": "/services/digital.webp",
+    "pageBackground": ["#fffbeb", "#fef3c7"],
+    "options": [{ "id": "plans", "label": "Plans & booking" }]
+  },
+  {
+    "id": "personal-branding",
+    "name": "Personal Branding",
+    "tagline": "YouTube, reels & posters",
+    "icon": "FaUserTie",
+    "image": "/services/personal.webp",
+    "pageBackground": ["#ecfeff", "#e0f2fe"],
+    "options": [{ "id": "plans", "label": "Plans & booking" }]
+  },
+  {
+    "id": "website",
+    "name": "Website Development",
+    "tagline": "Basic to premium sites",
+    "icon": "FaGlobe",
+    "image": "/services/website.webp",
+    "pageBackground": ["#ecfdf5", "#d1fae5"],
+    "options": [{ "id": "tiers", "label": "Tiers & add-ons" }]
+  },
+  {
+    "id": "app",
+    "name": "Mobile App Development",
+    "tagline": "Basic to premium apps",
+    "icon": "FaMobile",
+    "image": "/services/app.webp",
+    "pageBackground": ["#fff1f2", "#fecdd3"],
+    "options": [{ "id": "tiers", "label": "Tiers & add-ons" }]
+  }
+]

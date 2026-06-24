@@ -1,0 +1,334 @@
+[
+  {
+    "id": "brand-creative",
+    "name": "Branding & Creative",
+    "tagline": "Logo, print, menu, merch, and banners — pick a tier for each line; see preview, agree, then email.",
+    "icon": "FaPalette",
+    "image": "/services/brand.webp",
+    "pageBackground": ["#fef2f2", "#fecaca"],
+    "options": [{ "id": "quote", "label": "Price list & booking" }],
+    "detail": {
+      "contactEmail": "enquiries@yourcompany.com",
+      "agreementText": "I confirm the line items and tiers I selected for brand & creative. I understand the quote is based on this selection and that final scope and pricing will be confirmed in writing before work begins.",
+      "lineItems": [
+        {
+          "id": "logo",
+          "name": "Logo",
+          "options": [
+            { "id": "logo-std", "label": "Standard", "price": 9999 },
+            { "id": "logo-pre", "label": "Premium", "price": 24999 },
+            { "id": "logo-opt", "label": "Optional add-on", "price": 1999, "note": "add-on" }
+          ]
+        },
+        {
+          "id": "guideline",
+          "name": "Brand guideline",
+          "options": [
+            { "id": "g1", "label": "Package A", "price": 4999 },
+            { "id": "g2", "label": "Package B", "price": 7999 }
+          ]
+        },
+        {
+          "id": "card",
+          "name": "Business card",
+          "options": [
+            { "id": "c1", "label": "Option A", "price": 999 },
+            { "id": "c2", "label": "Option B", "price": 1499 }
+          ]
+        },
+        {
+          "id": "brochure",
+          "name": "Brochure (per page)",
+          "blurb": "Content add-on available separately",
+          "options": [
+            { "id": "br1", "label": "Standard (per page)", "price": 1499, "unit": "per page" },
+            { "id": "br2", "label": "Premium (per page)", "price": 2499, "unit": "per page" },
+            { "id": "br-content", "label": "Content add-on", "price": 500, "note": "add-on" }
+          ]
+        },
+        {
+          "id": "menu",
+          "name": "Menu card (per page)",
+          "options": [
+            { "id": "m1", "label": "Tier 1 (per page)", "price": 1999, "unit": "per page" },
+            { "id": "m2", "label": "Tier 2 (per page)", "price": 3999, "unit": "per page" }
+          ]
+        },
+        {
+          "id": "merch",
+          "name": "T-shirt / bag design",
+          "options": [
+            { "id": "t1", "label": "Option A", "price": 999 },
+            { "id": "t2", "label": "Option B", "price": 1499 }
+          ]
+        },
+        {
+          "id": "letter",
+          "name": "Letter head",
+          "options": [
+            { "id": "l1", "label": "Option A", "price": 999 },
+            { "id": "l2", "label": "Option B", "price": 1499 }
+          ]
+        },
+        {
+          "id": "promo-banner",
+          "name": "Promotional banner",
+          "blurb": "Content add-on +₹500",
+          "options": [
+            { "id": "pb1", "label": "Tier 1", "price": 1499 },
+            { "id": "pb2", "label": "Tier 2", "price": 2499 },
+            { "id": "pb-c", "label": "Content add-on", "price": 500, "note": "add-on" }
+          ]
+        },
+        {
+          "id": "web-banner",
+          "name": "Website banner",
+          "options": [
+            { "id": "wb1", "label": "Tier 1", "price": 1499 },
+            { "id": "wb2", "label": "Tier 2", "price": 2499 }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "packaging",
+    "name": "Packaging Design",
+    "tagline": "Master, mono & family — 3 design options per design; each extra option ₹2,999.",
+    "icon": "FaBoxOpen",
+    "image": "/services/packaging.webp",
+    "pageBackground": ["#faf5f0", "#e7d3c0"],
+    "options": [{ "id": "quote", "label": "Packages & booking" }],
+    "detail": {
+      "contactEmail": "enquiries@yourcompany.com",
+      "agreementText": "I confirm the packaging type and tier I selected. I understand each design includes 3 options; any further options are billed at ₹2,999 each as agreed in the proposal.",
+      "lineItems": [
+        {
+          "id": "master",
+          "name": "Master design",
+          "blurb": "Per design · 3 options included; extra option ₹2,999",
+          "options": [
+            { "id": "m-t1", "label": "Tier 1 (per design)", "price": 6999, "unit": "per design" },
+            { "id": "m-t2", "label": "Tier 2 (per design)", "price": 9999, "unit": "per design" }
+          ]
+        },
+        {
+          "id": "mono",
+          "name": "Mono design",
+          "blurb": "Per design · 3 options included; extra option ₹2,999",
+          "options": [
+            { "id": "mo-t1", "label": "Tier 1 (per design)", "price": 3999, "unit": "per design" },
+            { "id": "mo-t2", "label": "Tier 2 (per design)", "price": 7999, "unit": "per design" }
+          ]
+        },
+        {
+          "id": "family",
+          "name": "Family design",
+          "blurb": "Per design · 3 options included; extra option ₹2,999",
+          "options": [
+            { "id": "f-t1", "label": "Tier 1 (per design)", "price": 3999, "unit": "per design" },
+            { "id": "f-t2", "label": "Tier 2 (per design)", "price": 6999, "unit": "per design" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "digital-marketing",
+    "name": "Digital marketing",
+    "tagline": "Bundle plans, page handling, or a customised with/without content list — preview total, then email.",
+    "icon": "FaBullhorn",
+    "image": "/services/digital.webp",
+    "pageBackground": ["#fffbeb", "#fef3c7"],
+    "options": [{ "id": "plans", "label": "Plans & booking" }],
+    "detail": {
+      "type": "digital_marketing",
+      "contactEmail": "enquiries@yourcompany.com",
+      "agreementText": "I confirm the plan or customised selection below. I understand deliverable counts, content, and ad scope will be finalised in the written proposal before work or spend begins.",
+      "metaAdUnitLabel": "Meta ad setup (per ad)",
+      "metaAdUnitPrice": 2499,
+      "pageHandling": {
+        "id": "page",
+        "name": "Page handling (overall)",
+        "price": 10000,
+        "description": "Overall ₹10,000 — client provides creative and reels; we handle the page as agreed."
+      },
+      "fixedPlans": [
+        {
+          "id": "a",
+          "name": "Plan A",
+          "price": 24999,
+          "withContent": true,
+          "includes": [
+            "With content (bundle)",
+            "Creative — 3",
+            "Ad creative — 2",
+            "Animation reel — 2",
+            "Shoot with edit reel — 2",
+            "Voice over video — 1",
+            "Meta ad — 4"
+          ]
+        },
+        {
+          "id": "b",
+          "name": "Plan B",
+          "price": 39999,
+          "withContent": true,
+          "includes": [
+            "With content (bundle)",
+            "Creative — 5",
+            "Ad creative — 3",
+            "Animation reel — 4",
+            "Shoot with edit reel — 4",
+            "Voice over video — 1",
+            "Meta ad — 4"
+          ]
+        }
+      ],
+      "alaCarte": [
+        {
+          "id": "creative",
+          "name": "Creative",
+          "withContent": 999,
+          "withoutContent": 699
+        },
+        {
+          "id": "ad-creative",
+          "name": "Ad creative",
+          "withContent": 1499,
+          "withoutContent": 999
+        },
+        {
+          "id": "anim",
+          "name": "Animation reel",
+          "withContent": 1999,
+          "withoutContent": 1499
+        },
+        {
+          "id": "shoot",
+          "name": "Shoot with edit",
+          "withContent": 2999,
+          "withoutContent": 2499
+        },
+        {
+          "id": "voice",
+          "name": "Voice over video",
+          "withContent": 2999,
+          "withoutContent": 2499
+        }
+      ]
+    }
+  },
+  {
+    "id": "personal-branding",
+    "name": "Personal branding",
+    "tagline": "Reels with shoot & edit, posters with content — pick Plan A or B.",
+    "icon": "FaUserTie",
+    "image": "/services/personal.webp",
+    "pageBackground": ["#ecfeff", "#e0f2fe"],
+    "options": [{ "id": "plans", "label": "Plans & booking" }],
+    "detail": {
+      "type": "plan_pick_one",
+      "contactEmail": "enquiries@yourcompany.com",
+      "agreementText": "I confirm the personal branding plan (A or B) below. I understand shoot days, edit rounds, and poster counts are as listed unless changed in a signed contract.",
+      "bundles": [
+        {
+          "id": "pa",
+          "name": "Plan A",
+          "price": 39999,
+          "includes": [
+            "Reel — 12 (with shoot & edit)",
+            "Poster — 6 (with content)"
+          ]
+        },
+        {
+          "id": "pb",
+          "name": "Plan B",
+          "price": 59999,
+          "includes": [
+            "Reel — 20 (with shoot & edit)",
+            "Poster — 9 (with content)"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "website",
+    "name": "Website development",
+    "tagline": "From landing pages to full builds — pick a starting tier; scope and price are confirmed on call.",
+    "icon": "FaGlobe",
+    "image": "/services/website.webp",
+    "pageBackground": ["#ecfdf5", "#d1fae5"],
+    "options": [{ "id": "tiers", "label": "Tiers & add-ons" }],
+    "detail": {
+      "contactEmail": "enquiries@yourcompany.com",
+      "agreementText": "I confirm the website tier I am interested in. I understand custom features, integrations, and final pricing are agreed in the proposal before development starts.",
+      "lineItems": [
+        {
+          "id": "w-starter",
+          "name": "Starter / landing",
+          "blurb": "Single page or small static site",
+          "options": [
+            { "id": "w1", "label": "From (indicative)", "price": 9999, "note": "from" }
+          ]
+        },
+        {
+          "id": "w-business",
+          "name": "Business site",
+          "blurb": "Multi-page, CMS, basic SEO",
+          "options": [
+            { "id": "w2", "label": "From (indicative)", "price": 24999, "note": "from" }
+          ]
+        },
+        {
+          "id": "w-ecom",
+          "name": "E-commerce / advanced",
+          "blurb": "Catalogue, payments, integrations",
+          "options": [
+            { "id": "w3", "label": "From (indicative)", "price": 49999, "note": "from" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "app",
+    "name": "Mobile app development",
+    "tagline": "iOS, Android, or cross-platform — pick a base tier; feature scope is priced after discovery.",
+    "icon": "FaMobile",
+    "image": "/services/app.webp",
+    "pageBackground": ["#fff1f2", "#fecdd3"],
+    "options": [{ "id": "tiers", "label": "Tiers & add-ons" }],
+    "detail": {
+      "contactEmail": "enquiries@yourcompany.com",
+      "agreementText": "I confirm the app development tier I am interested in. I understand milestones, app store costs, and ongoing support are set out in the proposal.",
+      "lineItems": [
+        {
+          "id": "a-mvp",
+          "name": "MVP / prototype",
+          "blurb": "Core flows, one platform",
+          "options": [
+            { "id": "a1", "label": "From (indicative)", "price": 149999, "note": "from" }
+          ]
+        },
+        {
+          "id": "a-std",
+          "name": "Standard product",
+          "blurb": "iOS + Android, auth, API",
+          "options": [
+            { "id": "a2", "label": "From (indicative)", "price": 249999, "note": "from" }
+          ]
+        },
+        {
+          "id": "a-pro",
+          "name": "Scale / custom",
+          "blurb": "Offline, admin, third-party",
+          "options": [
+            { "id": "a3", "label": "From (indicative)", "price": 399999, "note": "from" }
+          ]
+        }
+      ]
+    }
+  }
+]
