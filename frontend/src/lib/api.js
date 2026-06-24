@@ -2,7 +2,7 @@ import axios from "axios";
 import { readJson } from "./storage.js";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://pixdot-backend.onrender.com",
   headers: {
     "Cache-Control": "no-cache, no-store, must-revalidate",
     "Pragma": "no-cache",

@@ -14,7 +14,7 @@ export function PricingProvider({ children }) {
   const fetchPricing = useCallback(async () => {
     try {
       const api = (await import("../lib/api.js")).default;
-      const res = await api.get("/pricing");
+      const res = await api.get("/api/pricing");
       if (res.data?.success && res.data?.data?.length > 0) {
         // Map backend _id or serviceId to id
         const mapped = res.data.data.map(s => ({ ...s, id: s.serviceId || s.id }));
@@ -45,9 +45,9 @@ export function PricingProvider({ children }) {
       const api = (await import("../lib/api.js")).default;
       const svc = payloadOverride || services.find((s) => s.id === serviceId);
       if (!svc) return;
-      
+
       const payload = { ...svc, serviceId: svc.id };
-      await api.put(`/pricing/${serviceId}`, payload);
+      await api.put(`/api/pricing/${serviceId}`, payload);
       setLastSavedAt(Date.now());
     } catch (err) {
       console.error("Failed to save service:", err);
@@ -60,7 +60,7 @@ export function PricingProvider({ children }) {
     try {
       const api = (await import("../lib/api.js")).default;
       await Promise.all(
-        services.map((svc) => api.put(`/pricing/${svc.id}`, { ...svc, serviceId: svc.id }))
+        services.map((svc) => api.put(`/api/pricing/${svc.id}`, { ...svc, serviceId: svc.id }))
       );
       setLastSavedAt(Date.now());
     } catch (err) {
