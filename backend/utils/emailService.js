@@ -15,6 +15,7 @@ const getTransporter = () => {
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
     secure: Number(SMTP_PORT) === 465, // true for 465, false for other ports like 587
+    family:4,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
