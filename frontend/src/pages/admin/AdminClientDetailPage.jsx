@@ -7,8 +7,7 @@ import MetaAdsCalendar from "../../components/admin/MetaAdsCalendar.jsx";
 import ConfirmModal from "../../components/admin/ConfirmModal.jsx";
 import styles from "../../components/admin/Admin.module.css";
 
-import { findClientBySlug, clientPath } from "../../lib/adminSlugs.js";
-import { toSlug } from "../../lib/utils.js";
+import { findClientBySlug, clientPath, toSlug } from "../../lib/adminSlugs.js";
 import api from "../../lib/api.js";
 import ClientServicesList from "../../components/admin/ClientServicesList.jsx";
 import { useWorkspace } from "../../context/WorkspaceContext.jsx";
