@@ -16,7 +16,6 @@ export function PricingProvider({ children }) {
   // Fetch pricing from backend on mount
   const fetchPricing = useCallback(async () => {
     try {
-    try {
       const res = await api.get("/api/pricing");
       if (res.data?.success && res.data?.data?.length > 0) {
         // Map backend _id or serviceId to id
