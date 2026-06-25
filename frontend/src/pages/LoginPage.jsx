@@ -98,8 +98,7 @@ export default function LoginPage() {
         <section className={styles.card}>
           <h1 className={styles.title}>Welcome back</h1>
           <p className={styles.sub}>
-            Admin uses <code>admin</code>. Staff and clients use their portal usernames. Default password is{" "}
-            <code>123456</code> until changed in admin Settings.
+            Sign in to securely access your Pixdot Workspace. Manage your work, collaborate with your team, and stay connected through your personalized dashboard.
           </p>
 
           <form onSubmit={handleLogin} className={styles.form} noValidate>
