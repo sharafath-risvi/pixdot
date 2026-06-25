@@ -45,9 +45,7 @@ export default function AdminSettingsPage() {
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const showToast = (message) => {
-    setToast(message);
-    clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(""), 2500);
+    globalToast.success(message);
   };
 
   return (
@@ -57,7 +55,7 @@ export default function AdminSettingsPage() {
         <p className={styles.pageHeadingSub}>Workspace preferences and login passwords</p>
       </div>
 
-      <SavedToast show={Boolean(toast)} message={toast} />
+
 
       <section className={styles.modernCard}>
         <div className={styles.cardHeader}>

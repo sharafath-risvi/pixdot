@@ -8,7 +8,7 @@ import PersonalBrandingService from "./services/PersonalBrandingService.jsx";
 import LineItemServicePage from "./services/LineItemServicePage.jsx";
 import { useServicePricing } from "../context/PricingContext.jsx";
 import { formatInr } from "../lib/format.js";
-
+import api from "../lib/api.js";
 export default function ServiceDetails() {
   const { serviceId } = useParams();
   const navigate = useNavigate();
@@ -67,7 +67,6 @@ export default function ServiceDetails() {
     
     setIsSubmitting(true);
     try {
-      const api = (await import("../lib/api.js")).default;
       const payload = {
         customerName: clientName.trim(),
         customerEmail: clientEmail.trim(),

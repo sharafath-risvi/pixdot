@@ -7,7 +7,9 @@ import MetaAdsCalendar from "../../components/admin/MetaAdsCalendar.jsx";
 import ConfirmModal from "../../components/admin/ConfirmModal.jsx";
 import styles from "../../components/admin/Admin.module.css";
 
-import { findClientBySlug, clientPath, toSlug } from "../../lib/adminSlugs.js";
+import { findClientBySlug, clientPath } from "../../lib/adminSlugs.js";
+import { toSlug } from "../../lib/utils.js";
+import api from "../../lib/api.js";
 import ClientServicesList from "../../components/admin/ClientServicesList.jsx";
 import { useWorkspace } from "../../context/WorkspaceContext.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
@@ -159,12 +161,12 @@ export function AdminClientProfileView() {
 
   const handleSave = async (patch) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.put(`/api/clients/${client.id}`, patch);
       await fetchClients();
       
       setEditing(false);
       setSaved(true);
+      toast.success("Client updated successfully.");
       window.setTimeout(() => setSaved(false), 2500);
 
       const nextSlug = toSlug(patch.name || client.name);
@@ -179,9 +181,9 @@ export function AdminClientProfileView() {
 
   const handleDelete = async () => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.delete(`/api/clients/${client.id}`);
       await fetchClients();
+      toast.success("Client deleted successfully.");
       navigate("/admin-dashboard/clients", { replace: true });
     } catch (error) {
       console.error("Failed to delete client", error);
@@ -293,7 +295,6 @@ export function AdminClientContentView() {
   const fetchCalendar = async () => {
     if (!client) return;
     try {
-      const api = (await import("../../lib/api.js")).default;
       const res = await api.get(`/api/clients/${client.id}/calendar/content`);
       setStore(res.data.data);
     } catch (err) {
@@ -309,8 +310,8 @@ export function AdminClientContentView() {
 
   const handleAdd = async (payload) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.post(`/api/clients/${client.id}/calendar/content`, payload);
+      toast.success("Content added successfully.");
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to add task.");
@@ -319,8 +320,8 @@ export function AdminClientContentView() {
 
   const handleUpdate = async (id, payload) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.put(`/api/clients/${client.id}/calendar/content/${id}`, payload);
+      toast.success("Content updated successfully.");
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to update task.");
@@ -329,8 +330,8 @@ export function AdminClientContentView() {
 
   const handleDelete = async (id) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.delete(`/api/clients/${client.id}/calendar/content/${id}`);
+      toast.success("Content deleted successfully.");
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to delete task.");
@@ -368,7 +369,6 @@ export function AdminClientMetaView() {
   const fetchCalendar = async () => {
     if (!client) return;
     try {
-      const api = (await import("../../lib/api.js")).default;
       const res = await api.get(`/api/clients/${client.id}/calendar/meta`);
       setStore(res.data.data);
     } catch (err) {
@@ -384,8 +384,8 @@ export function AdminClientMetaView() {
 
   const handleAdd = async (payload) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.post(`/api/clients/${client.id}/calendar/meta`, payload);
+      toast.success("Meta entry added successfully.");
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to add campaign.");
@@ -394,8 +394,8 @@ export function AdminClientMetaView() {
 
   const handleUpdate = async (id, payload) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.put(`/api/clients/${client.id}/calendar/meta/${id}`, payload);
+      toast.success("Meta entry updated successfully.");
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to update campaign.");
@@ -404,8 +404,8 @@ export function AdminClientMetaView() {
 
   const handleDelete = async (id) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.delete(`/api/clients/${client.id}/calendar/meta/${id}`);
+      toast.success("Meta entry deleted successfully.");
       await fetchCalendar();
     } catch (err) {
       toast.error("Failed to delete campaign.");

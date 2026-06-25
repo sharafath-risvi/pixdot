@@ -39,9 +39,12 @@ function Shell({ children, fullWidth = false, hideNavbar = false }) {
   );
 }
 
+import { Toaster } from "react-hot-toast";
+
 export default function App() {
   return (
     <ToastProvider>
+      <Toaster position="bottom-right" />
       <AuthProvider>
         <WorkspaceProvider>
           <PricingProvider>

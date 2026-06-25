@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthContext.jsx";
+import { useToast } from "./ToastContext.jsx";
+import api from "../lib/api.js";
 
 const WorkspaceContext = createContext(null);
 
@@ -14,13 +16,13 @@ export function WorkspaceProvider({ children }) {
   const [staffSalaryVisibleToSelf, setStaffSalaryVisibleToSelfState] = useState(true);
 
   const { isAuthenticated, role } = useAuth();
+  const toast = useToast();
 
   // Fetch staff from backend
   const fetchStaff = useCallback(async () => {
     if (!isAuthenticated || role === "client") return;
     try {
       setStaffLoading(true);
-      const api = (await import("../lib/api.js")).default;
       const response = await api.get("/api/staff");
       const fetchedStaff = response.data.data.map(s => ({ ...s, id: s._id }));
       setStaffMembers(fetchedStaff);
@@ -41,7 +43,6 @@ export function WorkspaceProvider({ children }) {
     if (!isAuthenticated || role === "client") return;
     try {
       setClientsLoading(true);
-      const api = (await import("../lib/api.js")).default;
       const response = await api.get("/api/clients");
       // Map MongoDB _id to id to match existing frontend code expectation
       const fetchedClients = response.data.data.map(c => ({ ...c, id: c._id }));
@@ -62,7 +63,6 @@ export function WorkspaceProvider({ children }) {
   const fetchSettings = useCallback(async () => {
     if (!isAuthenticated || role !== "admin") return;
     try {
-      const api = (await import("../lib/api.js")).default;
       const response = await api.get("/api/settings");
       if (response.data?.success && response.data?.data) {
         setStaffSalaryVisibleToSelfState(Boolean(response.data.data.staffSalaryVisibleToSelf));
@@ -80,12 +80,13 @@ export function WorkspaceProvider({ children }) {
     try {
       // Optimistic update
       setStaffSalaryVisibleToSelfState(value);
-      const api = (await import("../lib/api.js")).default;
       await api.put("/api/settings/staffSalaryVisibleToSelf", { value });
+      toast.success("Staff salary visibility updated.");
     } catch (err) {
       console.error("Failed to update setting:", err);
       // Revert on failure
       setStaffSalaryVisibleToSelfState(!value);
+      toast.error("Failed to update setting.");
     }
   }, []);
 

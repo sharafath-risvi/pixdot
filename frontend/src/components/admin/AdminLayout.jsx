@@ -11,6 +11,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useWorkspace } from "../../context/WorkspaceContext.jsx";
 import { buildServicePriceSettings } from "../../lib/agencyServices.js";
 import { clientPath } from "../../lib/adminSlugs.js";
+import api from "../../lib/api.js";
 import { useServicePricing } from "../../context/PricingContext.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
 
@@ -93,11 +94,11 @@ export default function AdminLayout() {
         onClose={() => setShowAddClient(false)}
         onSubmit={async (newClient) => {
           try {
-            const api = (await import("../../lib/api.js")).default;
             const res = await api.post("/api/clients", newClient);
             const createdClient = res.data.data;
             await fetchClients(); // refresh context
             setShowAddClient(false);
+            toast.success("Client created successfully.");
             navigate(clientPath({ ...createdClient, id: createdClient._id }));
           } catch (error) {
             console.error("Failed to add client", error);
@@ -111,10 +112,10 @@ export default function AdminLayout() {
         onClose={() => setShowAddStaff(false)}
         onSubmit={async (staff) => {
           try {
-            const api = (await import("../../lib/api.js")).default;
             await api.post("/api/staff", staff);
             await fetchStaff(); // refresh context
             setShowAddStaff(false);
+            toast.success("Staff member created successfully.");
           } catch (error) {
             console.error("Failed to add staff", error);
             toast.error(error.response?.data?.message || "Failed to add staff. Please try again.");

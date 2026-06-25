@@ -5,6 +5,7 @@ import StaffEditForm from "../../components/admin/StaffEditForm.jsx";
 import ConfirmModal from "../../components/admin/ConfirmModal.jsx";
 import styles from "../../components/admin/Admin.module.css";
 import { findStaffBySlug, staffPath, toSlug } from "../../lib/adminSlugs.js";
+import api from "../../lib/api.js";
 import { useWorkspace } from "../../context/WorkspaceContext.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
 
@@ -52,12 +53,12 @@ export default function AdminStaffDetailPage() {
 
   const handleSave = async (patch) => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.put(`/api/staff/${staff.id}`, patch);
       await fetchStaff();
 
       setEditing(false);
       setSaved(true);
+      toast.success("Staff member updated successfully.");
       window.setTimeout(() => setSaved(false), 2500);
 
       const nextSlug = toSlug(patch.name || staff.name);
@@ -72,9 +73,9 @@ export default function AdminStaffDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const api = (await import("../../lib/api.js")).default;
       await api.delete(`/api/staff/${staff.id}`);
       await fetchStaff();
+      toast.success("Staff member deleted successfully.");
       navigate("/admin-dashboard/team", { replace: true });
     } catch (error) {
       console.error("Failed to delete staff", error);
