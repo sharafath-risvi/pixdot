@@ -78,85 +78,25 @@ export default function StaffClientDetailPage() {
 
 export function StaffClientProfileView() {
   const { clientSlug } = useParams();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { clients, updateClient } = useWorkspace();
-  const { services } = useServicePricing();
-  const servicePriceSettings = useMemo(() => buildServicePriceSettings(services), [services]);
+  const { clients } = useWorkspace();
   const client = findClientBySlug(clients, clientSlug);
-  const [editing, setEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const toast = useToast();
-
-  useEffect(() => {
-    if (searchParams.get("edit") !== "1") return;
-    setEditing(true);
-    setSearchParams({}, { replace: true });
-  }, [searchParams, setSearchParams]);
 
   if (!client) return <Navigate to="/staff/clients" replace />;
-
-  const serviceNames = clientServiceNames(client);
-
-  const handleSave = (patch) => {
-    updateClient(client.id, patch);
-    setEditing(false);
-    setSaved(true);
-    toast.success("Client profile updated successfully.");
-    window.setTimeout(() => setSaved(false), 2500);
-
-    const nextSlug = toSlug(patch.name || client.name);
-    if (nextSlug && nextSlug !== clientSlug) {
-      navigate(staffClientPath({ ...client, ...patch }), { replace: true });
-    }
-  };
 
   return (
     <section className={styles.modernCard}>
       <div className={styles.profileCardToolbar}>
         <div>
           <h2 className={styles.cardTitle}>Client profile</h2>
-          <p className={styles.cardSub}>Company details and portal login.</p>
+          <p className={styles.cardSub}>Company details.</p>
         </div>
-        {!editing ? (
-          <button type="button" className={styles.buttonGhost} onClick={() => setEditing(true)}>
-            <FaPen aria-hidden />
-            Edit profile
-          </button>
-        ) : null}
-        {saved ? <span className={styles.savedPill}>Saved</span> : null}
       </div>
 
-      {editing ? (
-        <ClientEditForm
-          client={client}
-          servicePriceSettings={servicePriceSettings}
-          onCancel={() => setEditing(false)}
-          onSave={handleSave}
-        />
-      ) : (
-        <ul className={styles.detailsListStack}>
-          <li className={styles.detailsItemStack}>
-            <strong>Phone:</strong> {client.phone || "—"}
-          </li>
-          <li className={styles.detailsItemStack}>
-            <strong>Email:</strong> {client.email || "—"}
-          </li>
-          <li className={styles.detailsItemStack}>
-            <strong>GST:</strong> {client.gstNumber || "—"}
-          </li>
-          <li className={styles.detailsItemStack}>
-            <strong>Address:</strong> {client.address || "—"}
-          </li>
-          <li className={styles.detailsItemStack}>
-            <strong>Portal username:</strong> {client.portalUsername || "—"}
-          </li>
-          <li className={styles.detailsItemStack}>
-            <strong>Core values:</strong> {client.coreValues || "—"}
-          </li>
-        </ul>
-      )}
-      {!editing && <ClientServicesList client={client} readOnly />}
+      <ul className={styles.detailsListStack}>
+        <li className={styles.detailsItemStack}>
+          <strong>Client Name:</strong> {client.name || "—"}
+        </li>
+      </ul>
     </section>
   );
 }

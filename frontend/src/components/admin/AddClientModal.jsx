@@ -23,10 +23,12 @@ export default function AddClientModal({ open, onClose, onSubmit, servicePriceSe
   const [form, setForm] = useState(emptyClient);
   const [serviceConfig, setServiceConfig] = useState({});
   const safeServicePriceSettings = Array.isArray(servicePriceSettings) ? servicePriceSettings : [];
+  const [logoStatus, setLogoStatus] = useState("idle");
 
   useEffect(() => {
     if (!open) return;
     setForm(emptyClient);
+    setLogoStatus("idle");
     setServiceConfig(
       Object.fromEntries(
         safeServicePriceSettings.map((item) => [
@@ -37,6 +39,19 @@ export default function AddClientModal({ open, onClose, onSubmit, servicePriceSe
     );
   }, [open, safeServicePriceSettings]);
 
+  useEffect(() => {
+    const url = form.logo.trim();
+    if (!url) {
+      setLogoStatus("idle");
+      return;
+    }
+    setLogoStatus("loading");
+    const img = new window.Image();
+    img.onload = () => setLogoStatus("success");
+    img.onerror = () => setLogoStatus("error");
+    img.src = url;
+  }, [form.logo]);
+
   if (!open) return null;
 
   const handleChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -44,6 +59,7 @@ export default function AddClientModal({ open, onClose, onSubmit, servicePriceSe
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
+    if (form.logo.trim() && logoStatus === "error") return;
 
     const services = buildClientServicesPayload(form.servicesSelected, serviceConfig);
 
@@ -85,8 +101,26 @@ export default function AddClientModal({ open, onClose, onSubmit, servicePriceSe
         <p className={styles.cardSub}>Fill all required client onboarding details.</p>
         <form onSubmit={handleSubmit}>
           <div className={styles.formGrid}>
-            <input className={styles.input} placeholder="Client Name" value={form.name} onChange={(e) => handleChange("name", e.target.value)} />
-            <input className={styles.input} placeholder="Logo URL (or dummy)" value={form.logo} onChange={(e) => handleChange("logo", e.target.value)} />
+            <input className={styles.input} placeholder="Client Name" value={form.name} onChange={(e) => handleChange("name", e.target.value)} required />
+            <div>
+              <input className={styles.input} placeholder="Logo URL (or dummy)" value={form.logo} onChange={(e) => handleChange("logo", e.target.value)} />
+              {form.logo.trim() && (
+                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {logoStatus === "success" && (
+                    <img 
+                      src={form.logo.trim()} 
+                      alt="Logo preview" 
+                      style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                    />
+                  )}
+                  {logoStatus === "error" && (
+                    <p style={{ margin: 0, color: '#b91c1c', fontSize: '12px', fontWeight: '600' }}>
+                      Please enter a valid direct image URL (.jpg, .jpeg, .png, .webp, etc.).
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
             <input className={styles.input} placeholder="Business Type" value={form.businessType} onChange={(e) => handleChange("businessType", e.target.value)} />
             <input className={styles.input} placeholder="GST Number" value={form.gstNumber} onChange={(e) => handleChange("gstNumber", e.target.value)} />
             <input className={styles.input} placeholder="Phone" value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} />
@@ -155,7 +189,7 @@ export default function AddClientModal({ open, onClose, onSubmit, servicePriceSe
           <textarea className={styles.textarea} placeholder="Core values" value={form.coreValues} onChange={(e) => handleChange("coreValues", e.target.value)} />
           <div className={styles.modalActions}>
             <button type="button" className={styles.buttonGhost} onClick={onClose}>Cancel</button>
-            <button type="submit" className={styles.buttonPrimary}>Add Client</button>
+            <button type="submit" className={styles.buttonPrimary} disabled={logoStatus === "error"}>Add Client</button>
           </div>
         </form>
       </div>

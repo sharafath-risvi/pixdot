@@ -24,7 +24,6 @@ export default function StaffClientsPage() {
             client={client}
             onClick={() => navigate(staffClientPath(client))}
             onViewDetails={() => navigate(staffClientPath(client))}
-            onEdit={() => navigate(`${staffClientPath(client)}?edit=1`)}
             onOpenCalendar={() => navigate(`${staffClientPath(client)}/content`)}
           />
         ))}

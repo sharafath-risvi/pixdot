@@ -3,6 +3,7 @@ import styles from "./Admin.module.css";
 
 const posterTypes = ["Creative Poster", "Normal Poster", "AI Poster"];
 const reelTypes = ["AI Reel", "Edited Reel"];
+const shootTypes = ["Shoot"];
 
 export default function AddContentModal({ open, onClose, onSubmit, initialValue, dayLabel }) {
   const [kind, setKind] = useState("Poster");
@@ -31,12 +32,12 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
   }, [open, initialValue]);
 
   useEffect(() => {
-    setSubtype(kind === "Poster" ? posterTypes[0] : reelTypes[0]);
+    setSubtype(kind === "Poster" ? posterTypes[0] : kind === "Reel" ? reelTypes[0] : shootTypes[0]);
   }, [kind]);
 
   if (!open) return null;
 
-  const options = kind === "Poster" ? posterTypes : reelTypes;
+  const options = kind === "Poster" ? posterTypes : kind === "Reel" ? reelTypes : shootTypes;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,6 +65,7 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
             <select className={styles.select} value={kind} onChange={(e) => setKind(e.target.value)}>
               <option>Poster</option>
               <option>Reel</option>
+              <option>Shoot</option>
             </select>
             <select className={styles.select} value={subtype} onChange={(e) => setSubtype(e.target.value)}>
               {options.map((opt) => (

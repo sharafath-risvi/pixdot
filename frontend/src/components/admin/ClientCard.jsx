@@ -67,17 +67,19 @@ export default function ClientCard({ client, onClick, onViewDetails, onEdit, onO
           <FaEye aria-hidden />
           View
         </button>
-        <button
-          type="button"
-          className={styles.cardActionBtn}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit?.();
-          }}
-        >
-          <FaPen aria-hidden />
-          Edit
-        </button>
+        {onEdit && (
+          <button
+            type="button"
+            className={styles.cardActionBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
+            <FaPen aria-hidden />
+            Edit
+          </button>
+        )}
         <button
           type="button"
           className={styles.cardActionBtnPrimary}

@@ -16,6 +16,8 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
     portalPassword: client?.portalPassword || "",
   });
 
+  const [logoStatus, setLogoStatus] = useState("idle");
+
   useEffect(() => {
     setForm({
       name: client?.name || "",
@@ -31,11 +33,25 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
     });
   }, [client]);
 
+  useEffect(() => {
+    const url = form.logo.trim();
+    if (!url) {
+      setLogoStatus("idle");
+      return;
+    }
+    setLogoStatus("loading");
+    const img = new window.Image();
+    img.onload = () => setLogoStatus("success");
+    img.onerror = () => setLogoStatus("error");
+    img.src = url;
+  }, [form.logo]);
+
   const handleChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
+    if (form.logo.trim() && logoStatus === "error") return;
 
     onSave({
       name: form.name.trim(),
@@ -47,7 +63,7 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
       address: form.address.trim(),
       coreValues: form.coreValues.trim(),
       portalUsername: form.portalUsername.trim(),
-      portalPassword: form.portalPassword || "123456",
+      ...(form.portalPassword.trim() ? { portalPassword: form.portalPassword.trim() } : {}),
     });
   };
 
@@ -71,6 +87,22 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
             onChange={(e) => handleChange("logo", e.target.value)}
             placeholder="https://…"
           />
+          {form.logo.trim() && (
+            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {logoStatus === "success" && (
+                <img 
+                  src={form.logo.trim()} 
+                  alt="Logo preview" 
+                  style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '10px', border: '1px solid #e2e8f0' }}
+                />
+              )}
+              {logoStatus === "error" && (
+                <p style={{ margin: 0, color: '#b91c1c', fontSize: '13px', fontWeight: '600' }}>
+                  Please enter a valid direct image URL (.jpg, .jpeg, .png, .webp, etc.).
+                </p>
+              )}
+            </div>
+          )}
         </label>
         <label className={styles.fieldBlock}>
           <span className={styles.fieldLabel}>Business type</span>
@@ -150,7 +182,7 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
           <FiX aria-hidden />
           Cancel
         </button>
-        <button type="submit" className={styles.buttonPrimary}>
+        <button type="submit" className={styles.buttonPrimary} disabled={logoStatus === "error"}>
           <FiSave aria-hidden />
           Save changes
         </button>

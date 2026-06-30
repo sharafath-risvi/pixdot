@@ -137,7 +137,7 @@ export function AdminClientProfileView() {
 
   const navigate = useNavigate();
 
-  const { clients, fetchClients } = useWorkspace();
+  const { clients, fetchClients, updateClient } = useWorkspace();
 
   const client = findClientBySlug(clients, clientSlug);
 
@@ -160,6 +160,7 @@ export function AdminClientProfileView() {
 
   const handleSave = async (patch) => {
     try {
+      updateClient(client.id, patch);
       await api.put(`/api/clients/${client.id}`, patch);
       await fetchClients();
       
@@ -257,6 +258,9 @@ export function AdminClientProfileView() {
 
           <li className={styles.detailsItemStack}>
             <strong>Core values:</strong> {client.coreValues || "—"}
+          </li>
+          <li className={styles.detailsItemStack}>
+            <strong>Image URL:</strong> {client.logo || "—"}
           </li>
         </ul>
       )}

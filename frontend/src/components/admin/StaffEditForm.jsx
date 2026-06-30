@@ -10,7 +10,7 @@ function staffFormFromRecord(staff) {
     phone: staff.phone || "",
     email: staff.email || "",
     username: staff.username || "",
-    password: staff.password || "123456",
+    password: staff.password || "",
     profileImage: staff.profileImage || "",
   };
 }
@@ -35,8 +35,8 @@ export default function StaffEditForm({ staff, onSave, onCancel }) {
       phone: form.phone.trim(),
       email: form.email.trim(),
       username: form.username.trim(),
-      password: form.password || "123456",
       profileImage: form.profileImage.trim(),
+      ...(form.password.trim() ? { password: form.password.trim() } : {}),
     });
   };
 
