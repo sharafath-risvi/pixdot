@@ -17,7 +17,7 @@ router.route("/")
 
 router.route("/:id")
   .get(getServiceById)
-  .put(authorise("admin"), updateService)
+  .put(authorise("admin", "staff"), updateService)
   .delete(authorise("admin"), deleteService);
 
 module.exports = router;

@@ -65,7 +65,7 @@ const createService = async (req, res, next) => {
       return res.status(403).json({ success: false, message: "Only admins can assign services." });
     }
 
-    const { clientId, serviceName, category, description, status, price, startDate, endDate } = req.body;
+    const { clientId, serviceName, category, description, status, price, startDate, endDate, progress } = req.body;
 
     if (!clientId || !serviceName) {
       return res.status(400).json({ success: false, message: "Client ID and Service Name are required." });
@@ -86,6 +86,7 @@ const createService = async (req, res, next) => {
       startDate: startDate || Date.now(),
       endDate: endDate || null,
       assignedBy: req.user._id,
+      progress: progress !== undefined ? Math.min(100, Math.max(0, Number(progress) || 0)) : 0,
     });
 
     const populated = await ClientService.findById(newService._id)
@@ -104,8 +105,8 @@ const createService = async (req, res, next) => {
  */
 const updateService = async (req, res, next) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Only admins can update services." });
+    if (req.user.role !== "admin" && req.user.role !== "staff") {
+      return res.status(403).json({ success: false, message: "Only admins and staff can update services." });
     }
 
     const service = await ClientService.findById(req.params.id);
@@ -113,7 +114,19 @@ const updateService = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Service not found." });
     }
 
-    const { serviceName, category, description, status, price, startDate, endDate } = req.body;
+    const { serviceName, category, description, status, price, startDate, endDate, progress } = req.body;
+
+    if (req.user.role === "staff") {
+      if (progress !== undefined) {
+        const p = Number(progress);
+        service.progress = Math.min(100, Math.max(0, isNaN(p) ? 0 : p));
+      }
+      await service.save();
+      const populated = await ClientService.findById(service._id)
+        .populate("client", "name logo")
+        .populate("assignedBy", "username");
+      return res.status(200).json({ success: true, data: populated });
+    }
 
     if (serviceName !== undefined) service.serviceName = serviceName;
     if (category !== undefined) service.category = category;
@@ -122,6 +135,10 @@ const updateService = async (req, res, next) => {
     if (price !== undefined) service.price = price;
     if (startDate !== undefined) service.startDate = startDate;
     if (endDate !== undefined) service.endDate = endDate;
+    if (progress !== undefined) {
+      const p = Number(progress);
+      service.progress = Math.min(100, Math.max(0, isNaN(p) ? 0 : p));
+    }
 
     await service.save();
 

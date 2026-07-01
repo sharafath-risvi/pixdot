@@ -19,9 +19,20 @@ const getAllClients = async (req, res, next) => {
     const usernameMap = {};
     users.forEach((u) => { usernameMap[u._id.toString()] = u.username; });
 
+    const allServices = await ClientService.find({ status: "Active" });
+    const servicesByClient = {};
+    allServices.forEach((s) => {
+      const cid = s.client ? s.client.toString() : "";
+      if (cid) {
+        if (!servicesByClient[cid]) servicesByClient[cid] = [];
+        servicesByClient[cid].push(s);
+      }
+    });
+
     const result = clients.map((c) => ({
       ...c.toObject(),
       portalUsername: usernameMap[c.userId?.toString()] ?? "",
+      services: servicesByClient[c._id.toString()] || [],
     }));
 
     return res.status(200).json({ success: true, data: result });
@@ -50,9 +61,10 @@ const getClientById = async (req, res, next) => {
     }
 
     const userAccount = await User.findById(client.userId).select("username");
+    const clientServices = await ClientService.find({ client: id, status: "Active" });
     return res.status(200).json({
       success: true,
-      data: { ...client.toObject(), portalUsername: userAccount?.username ?? "" },
+      data: { ...client.toObject(), portalUsername: userAccount?.username ?? "", services: clientServices },
     });
   } catch (err) {
     next(err);
@@ -107,9 +119,30 @@ const createClient = async (req, res, next) => {
       totalAmount: Number(totalAmount) || 0,
     });
 
+    let createdServices = [];
+    if (req.body.services && Array.isArray(req.body.services) && req.body.services.length > 0) {
+      const serviceDocs = req.body.services.map((s) => {
+        const serviceName = typeof s === "string" ? s : (s.serviceName || "Unnamed Service");
+        const price = typeof s === "object" ? Number(s.currentPrice ?? s.price ?? 0) : 0;
+        return {
+          client: client._id,
+          serviceName,
+          category: "General",
+          description: "Assigned during client creation",
+          status: "Active",
+          price,
+          startDate: Date.now(),
+          endDate: null,
+          assignedBy: req.user ? req.user._id : userAccount._id,
+          progress: 0,
+        };
+      });
+      createdServices = await ClientService.insertMany(serviceDocs);
+    }
+
     return res.status(201).json({
       success: true,
-      data: { ...client.toObject(), portalUsername: userAccount.username },
+      data: { ...client.toObject(), portalUsername: userAccount.username, services: createdServices },
     });
   } catch (err) {
     next(err);
@@ -167,9 +200,10 @@ const updateClient = async (req, res, next) => {
     }
 
     const userAccount = await User.findById(client.userId).select("username");
+    const clientServices = await ClientService.find({ client: id, status: "Active" });
     return res.status(200).json({
       success: true,
-      data: { ...client.toObject(), portalUsername: userAccount?.username ?? "" },
+      data: { ...client.toObject(), portalUsername: userAccount?.username ?? "", services: clientServices },
     });
   } catch (err) {
     next(err);
