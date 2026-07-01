@@ -7,6 +7,7 @@ import ServiceEditModal from "./ServiceEditModal.jsx";
 import ConfirmModal from "../../components/admin/ConfirmModal.jsx";
 import { FaClipboardList } from "react-icons/fa6";
 import { useToast } from "../../context/ToastContext.jsx";
+import { ServiceProgressControl } from "../../components/admin/ClientServicesList.jsx";
 
 export default function AdminServicesPage() {
   const { clients } = useWorkspace();
@@ -34,6 +35,16 @@ export default function AdminServicesPage() {
   useEffect(() => {
     fetchServices();
   }, []);
+
+  const handleUpdateProgress = async (svc, newProgress) => {
+    try {
+      await api.put(`/api/services/${svc._id}`, { progress: newProgress });
+      toast.success("Progress updated successfully.");
+      fetchServices();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update progress.");
+    }
+  };
 
   const confirmDelete = (svc) => {
     setServiceToDelete(svc);
@@ -111,6 +122,7 @@ export default function AdminServicesPage() {
               <tr>
                 <th style={{ padding: "12px 16px", borderBottom: "1px solid #e2e8f0" }}>Client</th>
                 <th style={{ padding: "12px 16px", borderBottom: "1px solid #e2e8f0" }}>Service</th>
+                <th style={{ padding: "12px 16px", borderBottom: "1px solid #e2e8f0" }}>Progress</th>
                 <th style={{ padding: "12px 16px", borderBottom: "1px solid #e2e8f0" }}>Category</th>
                 <th style={{ padding: "12px 16px", borderBottom: "1px solid #e2e8f0" }}>Price</th>
                 <th style={{ padding: "12px 16px", borderBottom: "1px solid #e2e8f0" }}>Status</th>
@@ -125,6 +137,13 @@ export default function AdminServicesPage() {
                   </td>
                   <td style={{ padding: "12px 16px", color: "#334155" }}>
                     {svc.serviceName}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    <ServiceProgressControl
+                      service={svc}
+                      canUpdate={true}
+                      onSave={(newVal) => handleUpdateProgress(svc, newVal)}
+                    />
                   </td>
                   <td style={{ padding: "12px 16px", color: "#64748b" }}>
                     {svc.category}

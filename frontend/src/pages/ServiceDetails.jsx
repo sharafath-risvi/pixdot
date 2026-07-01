@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { FaHouse } from "react-icons/fa6";
 import ServiceIcon from "../components/ServiceIcon.jsx";
@@ -15,7 +15,29 @@ export default function ServiceDetails() {
   const { services } = useServicePricing();
   const service = services.find((s) => s.id === serviceId);
   const defaultIconName = services[0]?.icon;
-  const [multiSelections, setMultiSelections] = useState({});
+  const [multiSelections, setMultiSelections] = useState(() => {
+    try {
+      const saved = localStorage.getItem("pixdot_cart_selections") || sessionStorage.getItem("pixdot_cart_selections");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (Object.keys(multiSelections).length > 0) {
+        localStorage.setItem("pixdot_cart_selections", JSON.stringify(multiSelections));
+        sessionStorage.setItem("pixdot_cart_selections", JSON.stringify(multiSelections));
+      } else {
+        localStorage.removeItem("pixdot_cart_selections");
+        sessionStorage.removeItem("pixdot_cart_selections");
+      }
+    } catch (e) {
+      console.error("Failed to save cart to storage", e);
+    }
+  }, [multiSelections]);
+
   const [multiStep, setMultiStep] = useState("service");
   const [allAgreed, setAllAgreed] = useState(false);
   const [clientName, setClientName] = useState("");
@@ -32,9 +54,53 @@ export default function ServiceDetails() {
     [selectedList],
   );
 
+  const getLineKey = (label, svcId) => {
+    if (!label) return "";
+    if (svcId === "personal-branding") return "personal-branding-bundle";
+    if (svcId === "digital-marketing") {
+      if (label.includes(" x ")) return label.split(" x ")[0].trim();
+      if (label.includes(" - ")) return label.split(" - ")[0].trim();
+      if (label === "With content (bundle)") return "digital-marketing-plan";
+      return label.trim();
+    }
+    if (label.includes(" - ")) {
+      return label.split(" - ")[0].trim();
+    }
+    if (label.includes(" x ")) {
+      return label.split(" x ")[0].trim();
+    }
+    return label.trim();
+  };
+
   const handleMultiDecision = (decision, payload) => {
     if (!payload?.serviceId) return;
-    setMultiSelections((prev) => ({ ...prev, [payload.serviceId]: payload }));
+    setMultiSelections((prev) => {
+      const existing = prev[payload.serviceId];
+      if (!existing || !existing.lines || existing.lines.length === 0) {
+        return { ...prev, [payload.serviceId]: payload };
+      }
+      const newLines = payload.lines || [];
+      const mergedLines = [...existing.lines];
+      for (const newLine of newLines) {
+        const key = getLineKey(newLine.label, payload.serviceId);
+        const index = mergedLines.findIndex((item) => getLineKey(item.label, payload.serviceId) === key);
+        if (index !== -1) {
+          mergedLines[index] = newLine;
+        } else {
+          mergedLines.push(newLine);
+        }
+      }
+      const mergedTotal = mergedLines.reduce((sum, item) => sum + (item.price ?? 0), 0);
+      return {
+        ...prev,
+        [payload.serviceId]: {
+          ...existing,
+          ...payload,
+          lines: mergedLines,
+          total: mergedTotal,
+        },
+      };
+    });
     if (decision === "no") {
       setMultiStep("agreement");
     }
@@ -169,24 +235,36 @@ export default function ServiceDetails() {
                 </p>
                 <ul className="mt-2 space-y-1.5 text-xs text-violet-900">
                   {selectedList.map((item) => (
-                    <li key={item.serviceId} className="flex items-center justify-between gap-2 rounded-lg bg-white/80 px-2 py-1.5">
-                      <span className="truncate">{item.serviceName}</span>
-                      <span className="inline-flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => editMultiService(item.serviceId)}
-                          className="rounded-md border border-violet-200 px-1.5 py-0.5 text-[10px] font-semibold hover:bg-violet-100"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeMultiService(item.serviceId)}
-                          className="rounded-md border border-violet-200 px-1.5 py-0.5 text-[10px] font-semibold hover:bg-violet-100"
-                        >
-                          Remove
-                        </button>
-                      </span>
+                    <li key={item.serviceId} className="rounded-lg bg-white/80 p-2 shadow-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-violet-950 truncate">{item.serviceName}</span>
+                        <span className="inline-flex gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => editMultiService(item.serviceId)}
+                            className="rounded-md border border-violet-200 px-1.5 py-0.5 text-[10px] font-semibold hover:bg-violet-100"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeMultiService(item.serviceId)}
+                            className="rounded-md border border-violet-200 px-1.5 py-0.5 text-[10px] font-semibold hover:bg-violet-100"
+                          >
+                            Remove
+                          </button>
+                        </span>
+                      </div>
+                      {item.lines && item.lines.length > 0 && (
+                        <ul className="mt-1.5 pl-1 space-y-1 text-[11px] text-violet-900 font-medium border-t border-violet-100/60 pt-1.5">
+                          {item.lines.map((line, idx) => (
+                            <li key={idx} className="flex items-center justify-between gap-2">
+                              <span className="truncate">- {line.label}</span>
+                              <span className="shrink-0 font-semibold">{formatInr(line.price)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -210,13 +288,25 @@ export default function ServiceDetails() {
                 <div className="mt-4 space-y-4">
                   <ul className="space-y-2">
                     {selectedList.map((item) => (
-                      <li key={item.serviceId} className="rounded-xl border border-slate-200 p-3">
+                      <li key={item.serviceId} className="rounded-xl border border-slate-200 p-3 shadow-sm">
                         <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-slate-900">{item.serviceName}</p>
-                            <p className="text-sm text-slate-600">{formatInr(item.total)}</p>
+                          <div className="w-full min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-bold text-slate-900 text-base">{item.serviceName}</p>
+                              <p className="font-bold text-violet-700 text-sm">{formatInr(item.total)}</p>
+                            </div>
+                            {item.lines && item.lines.length > 0 && (
+                              <ul className="mt-2 pl-2 space-y-1 text-xs text-slate-600 border-l-2 border-violet-300">
+                                {item.lines.map((line, idx) => (
+                                  <li key={idx} className="flex justify-between gap-2">
+                                    <span className="truncate font-medium">- {line.label}</span>
+                                    <span className="shrink-0 text-slate-800 font-semibold">{formatInr(line.price)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
-                          <div className="inline-flex gap-1">
+                          <div className="inline-flex gap-1 shrink-0 ml-2">
                             <button
                               type="button"
                               onClick={() => editMultiService(item.serviceId)}
@@ -285,6 +375,10 @@ export default function ServiceDetails() {
                       setClientEmail("");
                       setClientPhone("");
                       setAllAgreed(false);
+                      try {
+                        localStorage.removeItem("pixdot_cart_selections");
+                        sessionStorage.removeItem("pixdot_cart_selections");
+                      } catch {}
                     }}
                     className="mt-6 rounded-xl bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
                   >

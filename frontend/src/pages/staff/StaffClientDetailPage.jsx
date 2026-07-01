@@ -88,7 +88,7 @@ export function StaffClientProfileView() {
       <div className={styles.profileCardToolbar}>
         <div>
           <h2 className={styles.cardTitle}>Client profile</h2>
-          <p className={styles.cardSub}>Company details.</p>
+          <p className={styles.cardSub}>Company details and portal login.</p>
         </div>
       </div>
 
@@ -96,7 +96,29 @@ export function StaffClientProfileView() {
         <li className={styles.detailsItemStack}>
           <strong>Client Name:</strong> {client.name || "—"}
         </li>
+        <li className={styles.detailsItemStack}>
+          <strong>Phone:</strong> —
+        </li>
+        <li className={styles.detailsItemStack}>
+          <strong>Email:</strong> —
+        </li>
+        <li className={styles.detailsItemStack}>
+          <strong>GST:</strong> —
+        </li>
+        <li className={styles.detailsItemStack}>
+          <strong>Address:</strong> —
+        </li>
+        <li className={styles.detailsItemStack}>
+          <strong>Portal Username:</strong> —
+        </li>
+        <li className={styles.detailsItemStack}>
+          <strong>Core Values:</strong> —
+        </li>
+        <li className={styles.detailsItemStack}>
+          <strong>Image URL:</strong> —
+        </li>
       </ul>
+      <ClientServicesList client={client} readOnly={true} allowProgressUpdate={true} />
     </section>
   );
 }

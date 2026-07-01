@@ -3,6 +3,7 @@ import { useClientPersonal } from "../../context/ClientPersonalContext.jsx";
 import { formatInr } from "../../lib/format.js";
 import api from "../../lib/api.js";
 import styles from "./Client.module.css";
+import { ServiceProgressControl } from "../admin/ClientServicesList.jsx";
 
 export default function ClientProfile() {
   const { currentClient } = useClientPersonal();
@@ -83,6 +84,7 @@ export default function ClientProfile() {
               <thead style={{ background: "#f8fafc", textAlign: "left", color: "#64748b" }}>
                 <tr>
                   <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Service</th>
+                  <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Progress</th>
                   <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Description</th>
                   <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Status</th>
                   <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Price</th>
@@ -94,6 +96,9 @@ export default function ClientProfile() {
                     <td style={{ padding: "10px 16px", fontWeight: "500", color: "#0f172a" }}>
                       {svc.serviceName}
                       <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>{svc.category}</div>
+                    </td>
+                    <td style={{ padding: "10px 16px" }}>
+                      <ServiceProgressControl service={svc} canUpdate={false} />
                     </td>
                     <td style={{ padding: "10px 16px", color: "#475569" }}>
                       {svc.description || "—"}

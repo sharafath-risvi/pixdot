@@ -7,7 +7,81 @@ import ConfirmModal from "./ConfirmModal.jsx";
 import { FaClipboardList } from "react-icons/fa6";
 import { useToast } from "../../context/ToastContext.jsx";
 
-export default function ClientServicesList({ client, readOnly = false }) {
+export function ServiceProgressControl({ service, canUpdate = false, onSave }) {
+  const [val, setVal] = useState(service?.progress || 0);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setVal(service?.progress || 0);
+  }, [service?.progress]);
+
+  const handleSave = async () => {
+    if (val === (service?.progress || 0)) return;
+    setSaving(true);
+    await onSave(val);
+    setSaving(false);
+  };
+
+  return (
+    <div style={{ minWidth: "180px", display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "12px", fontWeight: "600", color: "#334155" }}>
+        <span>Progress</span>
+        <span style={{ color: "#6366f1", fontWeight: "700" }}>{val}%</span>
+      </div>
+      <div style={{ width: "100%", background: "#f1f5f9", borderRadius: "999px", height: "8px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+        <div
+          style={{
+            width: `${Math.min(100, Math.max(0, val))}%`,
+            background: "linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)",
+            height: "100%",
+            borderRadius: "999px",
+            transition: "width 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        />
+      </div>
+      {canUpdate && (
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={val}
+            onChange={(e) => setVal(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
+            style={{ flex: 1, accentColor: "#6366f1", cursor: "pointer", height: "4px" }}
+          />
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={val}
+            onChange={(e) => setVal(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
+            style={{ width: "48px", padding: "2px 4px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", textAlign: "center", fontWeight: "600" }}
+          />
+          <button
+            type="button"
+            disabled={val === (service?.progress || 0) || saving}
+            onClick={handleSave}
+            style={{
+              padding: "2px 8px",
+              borderRadius: "6px",
+              background: val === (service?.progress || 0) ? "#e2e8f0" : "#0f172a",
+              color: val === (service?.progress || 0) ? "#94a3b8" : "white",
+              fontSize: "11px",
+              fontWeight: "600",
+              cursor: val === (service?.progress || 0) ? "default" : "pointer",
+              border: "none",
+              transition: "all 0.2s",
+            }}
+          >
+            {saving ? "..." : "Save"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ClientServicesList({ client, readOnly = false, allowProgressUpdate = false }) {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,6 +126,16 @@ export default function ClientServicesList({ client, readOnly = false }) {
     } finally {
       setDeleteModalOpen(false);
       setServiceToDelete(null);
+    }
+  };
+
+  const handleUpdateProgress = async (svc, newProgress) => {
+    try {
+      await api.put(`/api/services/${svc._id}`, { progress: newProgress });
+      toast.success("Progress updated successfully.");
+      fetchServices();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update progress.");
     }
   };
 
@@ -102,6 +186,7 @@ export default function ClientServicesList({ client, readOnly = false }) {
             <thead style={{ background: "#f8fafc", textAlign: "left", color: "#64748b" }}>
               <tr>
                 <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Service</th>
+                <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Progress</th>
                 <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Status</th>
                 <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0" }}>Price</th>
                 {!readOnly && <th style={{ padding: "10px 16px", borderBottom: "1px solid #e2e8f0", textAlign: "right" }}>Actions</th>}
@@ -113,6 +198,13 @@ export default function ClientServicesList({ client, readOnly = false }) {
                   <td style={{ padding: "10px 16px", fontWeight: "500", color: "#0f172a" }}>
                     {svc.serviceName}
                     <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>{svc.category}</div>
+                  </td>
+                  <td style={{ padding: "10px 16px" }}>
+                    <ServiceProgressControl
+                      service={svc}
+                      canUpdate={!readOnly || allowProgressUpdate}
+                      onSave={(newVal) => handleUpdateProgress(svc, newVal)}
+                    />
                   </td>
                   <td style={{ padding: "10px 16px" }}>
                     <span style={{ padding: "4px 8px", borderRadius: "999px", fontSize: "12px", fontWeight: "600", background: svc.status === "Active" ? "#dcfce7" : "#f1f5f9", color: svc.status === "Active" ? "#166534" : "#475569" }}>
