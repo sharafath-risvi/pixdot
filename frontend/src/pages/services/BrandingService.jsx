@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useServicePricing } from "../../context/PricingContext.jsx";
 import { formatInr } from "../../lib/format.js";
 import ServiceDotMenu from "./ServiceDotMenu.jsx";
+import ProposalSummaryPanel from "../../components/ProposalSummaryPanel.jsx";
 
 const getOptionKey = (lineId, optionId) => `${lineId}::${optionId}`;
 
@@ -20,11 +21,19 @@ function BackLink() {
   );
 }
 
-export default function BrandingService({ onMultiDecision }) {
+export default function BrandingService({
+  onMultiDecision,
+  selectedList,
+  selectedTotal,
+  removeMultiService,
+  editMultiService,
+  removeLineItem,
+}) {
   const { services } = useServicePricing();
   const service = services.find((s) => s.id === "brand-creative");
   const d = service?.detail;
   const lineItems = d?.lineItems ?? [];
+  const didInteractRef = useRef(false);
   const [qtyByOption, setQtyByOption] = useState({});
   const [agreed, setAgreed] = useState(false);
   const [step, setStep] = useState(1);
@@ -33,6 +42,7 @@ export default function BrandingService({ onMultiDecision }) {
   const [clientPhone, setClientPhone] = useState("");
 
   useEffect(() => {
+    didInteractRef.current = false;
     setQtyByOption({});
     setAgreed(false);
     setStep(1);
@@ -65,9 +75,19 @@ export default function BrandingService({ onMultiDecision }) {
     return `${service?.name} — line items\n\nClient details\nName: ${clientName || "(not provided)"}\nEmail: ${clientEmail || "(not provided)"}\nPhone: ${clientPhone || "(not provided)"}\n\nSelected items\n${lines || "(none selected)"}\n\nIndicative subtotal: ${formatInr(total)}\n`;
   }, [clientEmail, clientName, clientPhone, displayLines, service?.name, total]);
 
+  useEffect(() => {
+    if (!service || !didInteractRef.current) return;
+    if (displayLines.length > 0) {
+      onMultiDecision?.("sync", { serviceId: service.id, serviceName: service.name, lines: displayLines, total });
+    } else {
+      onMultiDecision?.("sync", { serviceId: service.id, lines: [], total: 0 });
+    }
+  }, [displayLines, total, service, onMultiDecision]);
+
   if (!service) return null;
 
-  const changeQty = (lineId, optionId, delta) =>
+  const changeQty = (lineId, optionId, delta) => {
+    didInteractRef.current = true;
     setQtyByOption((prev) => {
       const key = getOptionKey(lineId, optionId);
       const next = Math.max(0, Math.max(0, prev[key] ?? 0) + delta);
@@ -77,6 +97,7 @@ export default function BrandingService({ onMultiDecision }) {
       }
       return { ...prev, [key]: next };
     });
+  };
 
   const email = d?.contactEmail ?? "hello@example.com";
   const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(`[${service.name}] Price enquiry`)}&body=${encodeURIComponent(body)}`;
@@ -187,12 +208,18 @@ export default function BrandingService({ onMultiDecision }) {
           </div>
           <div className="lg:col-span-2 lg:self-start">
             <div className="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Preview</p>
-                <h2 className="mt-1 text-lg font-bold text-slate-900">{service.name}</h2>
-                {displayLines.length === 0 ? <p className="mt-2 text-sm text-slate-500">Choose options to see a total.</p> : <ul className="mt-3 space-y-2 text-sm text-slate-700">{displayLines.map((k, i) => <li key={i} className="flex justify-between gap-2 border-b border-slate-100 pb-2 last:border-0"><span><span className="font-medium text-slate-900">{k.label}</span>{k.sub ? <span className="mt-0.5 block text-xs text-slate-500">{k.sub}</span> : null}</span><span className="shrink-0 font-semibold text-slate-800">{formatInr(k.price)}</span></li>)}</ul>}
-                {displayLines.length > 0 ? <p className="mt-3 border-t border-slate-200 pt-3 text-base font-bold text-slate-900">Indicative total <span className="float-right">{formatInr(total)}</span></p> : null}
-              </div>
+              <ProposalSummaryPanel
+                selectedList={selectedList}
+                selectedTotal={selectedTotal}
+                removeMultiService={removeMultiService}
+                editMultiService={editMultiService}
+                removeLineItem={removeLineItem}
+                currentSelection={{ serviceId: service.id, serviceName: service.name, lines: displayLines, total }}
+                onClearCurrentSelection={() => {
+                  didInteractRef.current = true;
+                  setQtyByOption({});
+                }}
+              />
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => setStep((s) => Math.max(1, s - 1))} className={["flex-1 rounded-xl border py-2.5 text-sm font-semibold", step === 1 ? "cursor-not-allowed border-slate-200 text-slate-400" : "border-slate-300 text-slate-700 hover:bg-slate-50"].join(" ")} disabled={step === 1}>Back</button>
                 {step < 4 ? (

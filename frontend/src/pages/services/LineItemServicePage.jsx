@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useServicePricing } from "../../context/PricingContext.jsx";
 import { formatInr } from "../../lib/format.js";
 import ServiceDotMenu from "./ServiceDotMenu.jsx";
+import ProposalSummaryPanel from "../../components/ProposalSummaryPanel.jsx";
 
 const optionKey = (lineId, optionId) => `${lineId}::${optionId}`;
 
@@ -11,11 +12,20 @@ const optionKey = (lineId, optionId) => `${lineId}::${optionId}`;
  * (packaging, website, and mobile app). Step 1: pick quantities, step 2:
  * preview + multi-service prompt, step 3: agreement, step 4: contact + email.
  */
-export default function LineItemServicePage({ serviceId, onMultiDecision }) {
+export default function LineItemServicePage({
+  serviceId,
+  onMultiDecision,
+  selectedList,
+  selectedTotal,
+  removeMultiService,
+  editMultiService,
+  removeLineItem,
+}) {
   const { services } = useServicePricing();
   const service = services.find((s) => s.id === serviceId);
   const detail = service?.detail;
   const lineItems = detail?.lineItems ?? [];
+  const didInteractRef = useRef(false);
 
   const [qtyByOption, setQtyByOption] = useState({});
   const [agreed, setAgreed] = useState(false);
@@ -25,6 +35,7 @@ export default function LineItemServicePage({ serviceId, onMultiDecision }) {
   const [clientPhone, setClientPhone] = useState("");
 
   useEffect(() => {
+    didInteractRef.current = false;
     setQtyByOption({});
     setAgreed(false);
     setStep(1);
@@ -52,18 +63,29 @@ export default function LineItemServicePage({ serviceId, onMultiDecision }) {
     return { total: sum, lines: out };
   }, [lineItems, qtyByOption]);
 
+  useEffect(() => {
+    if (!service || !didInteractRef.current) return;
+    if (lines.length > 0) {
+      onMultiDecision?.("sync", { serviceId: service.id, serviceName: service.name, lines, total });
+    } else {
+      onMultiDecision?.("sync", { serviceId: service.id, lines: [], total: 0 });
+    }
+  }, [lines, total, service, onMultiDecision]);
+
   if (!service) return null;
 
-  const bump = (lineId, optionId, delta) =>
+  const bump = (lineId, optionId, delta) => {
+    didInteractRef.current = true;
     setQtyByOption((prev) => {
       const k = optionKey(lineId, optionId);
       const next = Math.max(0, (prev[k] ?? 0) + delta);
       if (!next) {
-        const { [k]: _removed, ...rest } = prev;
+        const { [k]: _, ...rest } = prev;
         return rest;
       }
       return { ...prev, [k]: next };
     });
+  };
 
   const hasSelection = lines.length > 0;
   const contactOk = clientName.trim() && clientEmail.trim() && clientPhone.trim();
@@ -229,12 +251,18 @@ export default function LineItemServicePage({ serviceId, onMultiDecision }) {
 
           <div className="lg:col-span-2 lg:self-start">
             <div className="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Preview</p>
-                <p className="mt-2 text-sm">
-                  Total: <strong>{formatInr(total)}</strong>
-                </p>
-              </div>
+              <ProposalSummaryPanel
+                selectedList={selectedList}
+                selectedTotal={selectedTotal}
+                removeMultiService={removeMultiService}
+                editMultiService={editMultiService}
+                removeLineItem={removeLineItem}
+                currentSelection={{ serviceId: service.id, serviceName: service.name, lines, total }}
+                onClearCurrentSelection={() => {
+                  didInteractRef.current = true;
+                  setQtyByOption({});
+                }}
+              />
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"

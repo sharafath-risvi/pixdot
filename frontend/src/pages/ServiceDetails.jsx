@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { FaHouse } from "react-icons/fa6";
 import ServiceIcon from "../components/ServiceIcon.jsx";
@@ -72,9 +72,21 @@ export default function ServiceDetails() {
     return label.trim();
   };
 
-  const handleMultiDecision = (decision, payload) => {
+  const handleMultiDecision = useCallback((decision, payload) => {
     if (!payload?.serviceId) return;
     setMultiSelections((prev) => {
+      if (decision === "sync" || decision === "replace") {
+        if (!payload.lines || payload.lines.length === 0) {
+          if (!prev[payload.serviceId]) return prev;
+          const { [payload.serviceId]: _, ...rest } = prev;
+          return rest;
+        }
+        const existing = prev[payload.serviceId];
+        if (existing && JSON.stringify(existing) === JSON.stringify(payload)) {
+          return prev;
+        }
+        return { ...prev, [payload.serviceId]: payload };
+      }
       const existing = prev[payload.serviceId];
       if (!existing || !existing.lines || existing.lines.length === 0) {
         return { ...prev, [payload.serviceId]: payload };
@@ -91,31 +103,57 @@ export default function ServiceDetails() {
         }
       }
       const mergedTotal = mergedLines.reduce((sum, item) => sum + (item.price ?? 0), 0);
+      const updated = {
+        ...existing,
+        ...payload,
+        lines: mergedLines,
+        total: mergedTotal,
+      };
+      if (existing && JSON.stringify(existing) === JSON.stringify(updated)) {
+        return prev;
+      }
       return {
         ...prev,
-        [payload.serviceId]: {
-          ...existing,
-          ...payload,
-          lines: mergedLines,
-          total: mergedTotal,
-        },
+        [payload.serviceId]: updated,
       };
     });
     if (decision === "no") {
       setMultiStep("agreement");
     }
-  };
+  }, []);
 
-  const removeMultiService = (serviceIdToRemove) => {
+  const removeLineItem = useCallback((serviceId, lineIndex) => {
     setMultiSelections((prev) => {
+      const existing = prev[serviceId];
+      if (!existing || !existing.lines) return prev;
+      const newLines = existing.lines.filter((_, idx) => idx !== lineIndex);
+      if (newLines.length === 0) {
+        const { [serviceId]: _, ...rest } = prev;
+        return rest;
+      }
+      const newTotal = newLines.reduce((sum, item) => sum + (item.price ?? 0), 0);
+      return {
+        ...prev,
+        [serviceId]: {
+          ...existing,
+          lines: newLines,
+          total: newTotal,
+        },
+      };
+    });
+  }, []);
+
+  const removeMultiService = useCallback((serviceIdToRemove) => {
+    setMultiSelections((prev) => {
+      if (!prev[serviceIdToRemove]) return prev;
       const { [serviceIdToRemove]: _, ...rest } = prev;
       return rest;
     });
-  };
-  const editMultiService = (serviceIdToEdit) => {
+  }, []);
+  const editMultiService = useCallback((serviceIdToEdit) => {
     setMultiStep("service");
     navigate(`/services/${serviceIdToEdit}`);
-  };
+  }, [navigate]);
 
   const submitQuote = async () => {
     setValidationErrors({});
@@ -169,7 +207,16 @@ export default function ServiceDetails() {
       </Link>
     </div>
   ) : (
-    <ServiceDetailContent service={service} onMultiDecision={handleMultiDecision} />
+    <ServiceDetailContent
+      key={service.id}
+      service={service}
+      onMultiDecision={handleMultiDecision}
+      selectedList={selectedList}
+      selectedTotal={selectedTotal}
+      removeMultiService={removeMultiService}
+      editMultiService={editMultiService}
+      removeLineItem={removeLineItem}
+    />
   );
 
   // Removed old mailto logic, using submitQuote via API.
@@ -228,51 +275,6 @@ export default function ServiceDetails() {
                 );
               })}
             </nav>
-            {selectedList.length > 0 ? (
-              <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-2.5">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
-                  Selected services
-                </p>
-                <ul className="mt-2 space-y-1.5 text-xs text-violet-900">
-                  {selectedList.map((item) => (
-                    <li key={item.serviceId} className="rounded-lg bg-white/80 p-2 shadow-sm">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-violet-950 truncate">{item.serviceName}</span>
-                        <span className="inline-flex gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => editMultiService(item.serviceId)}
-                            className="rounded-md border border-violet-200 px-1.5 py-0.5 text-[10px] font-semibold hover:bg-violet-100"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeMultiService(item.serviceId)}
-                            className="rounded-md border border-violet-200 px-1.5 py-0.5 text-[10px] font-semibold hover:bg-violet-100"
-                          >
-                            Remove
-                          </button>
-                        </span>
-                      </div>
-                      {item.lines && item.lines.length > 0 && (
-                        <ul className="mt-1.5 pl-1 space-y-1 text-[11px] text-violet-900 font-medium border-t border-violet-100/60 pt-1.5">
-                          {item.lines.map((line, idx) => (
-                            <li key={idx} className="flex items-center justify-between gap-2">
-                              <span className="truncate">- {line.label}</span>
-                              <span className="shrink-0 font-semibold">{formatInr(line.price)}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-2 border-t border-violet-200 pt-2 text-sm font-bold text-violet-900">
-                  Total: {formatInr(selectedTotal)}
-                </p>
-              </div>
-            ) : null}
           </div>
         </div>
       </aside>
@@ -432,18 +434,35 @@ export default function ServiceDetails() {
   );
 }
 
-function ServiceDetailContent({ service, onMultiDecision }) {
+function ServiceDetailContent({
+  service,
+  onMultiDecision,
+  selectedList,
+  selectedTotal,
+  removeMultiService,
+  editMultiService,
+  removeLineItem,
+}) {
+  const commonProps = {
+    onMultiDecision,
+    selectedList,
+    selectedTotal,
+    removeMultiService,
+    editMultiService,
+    removeLineItem,
+  };
+
   switch (service.id) {
     case "brand-creative":
-      return <BrandingService onMultiDecision={onMultiDecision} />;
+      return <BrandingService {...commonProps} />;
     case "digital-marketing":
-      return <DigitalMarketingService onMultiDecision={onMultiDecision} />;
+      return <DigitalMarketingService {...commonProps} />;
     case "personal-branding":
-      return <PersonalBrandingService onMultiDecision={onMultiDecision} />;
+      return <PersonalBrandingService {...commonProps} />;
     case "packaging":
     case "website":
     case "app":
-      return <LineItemServicePage serviceId={service.id} onMultiDecision={onMultiDecision} />;
+      return <LineItemServicePage serviceId={service.id} {...commonProps} />;
     default:
       return (
         <div className="p-4 sm:p-6 lg:p-8">
