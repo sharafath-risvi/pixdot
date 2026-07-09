@@ -6,6 +6,7 @@ import ServiceEditModal from "../../pages/admin/ServiceEditModal.jsx";
 import ConfirmModal from "./ConfirmModal.jsx";
 import { FaClipboardList } from "react-icons/fa6";
 import { useToast } from "../../context/ToastContext.jsx";
+import { useWorkspace } from "../../context/WorkspaceContext.jsx";
 
 export function ServiceProgressControl({ service, canUpdate = false, onSave }) {
   const [val, setVal] = useState(service?.progress || 0);
@@ -82,6 +83,7 @@ export function ServiceProgressControl({ service, canUpdate = false, onSave }) {
 }
 
 export default function ClientServicesList({ client, readOnly = false, allowProgressUpdate = false }) {
+  const { fetchClients } = useWorkspace();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -121,6 +123,7 @@ export default function ClientServicesList({ client, readOnly = false, allowProg
       await api.delete(`/api/services/${serviceToDelete._id}`);
       toast.success("Service deleted successfully.");
       fetchServices();
+      fetchClients?.(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete service.");
     } finally {
@@ -134,6 +137,7 @@ export default function ClientServicesList({ client, readOnly = false, allowProg
       await api.put(`/api/services/${svc._id}`, { progress: newProgress });
       toast.success("Progress updated successfully.");
       fetchServices();
+      fetchClients?.(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update progress.");
     }
@@ -150,6 +154,7 @@ export default function ClientServicesList({ client, readOnly = false, allowProg
       }
       setModalOpen(false);
       fetchServices();
+      fetchClients?.(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save service.");
     }

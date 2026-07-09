@@ -10,7 +10,7 @@ import { useToast } from "../../context/ToastContext.jsx";
 import { ServiceProgressControl } from "../../components/admin/ClientServicesList.jsx";
 
 export default function AdminServicesPage() {
-  const { clients } = useWorkspace();
+  const { clients, fetchClients } = useWorkspace();
   const toast = useToast();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +41,7 @@ export default function AdminServicesPage() {
       await api.put(`/api/services/${svc._id}`, { progress: newProgress });
       toast.success("Progress updated successfully.");
       fetchServices();
+      fetchClients?.(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update progress.");
     }
@@ -57,6 +58,7 @@ export default function AdminServicesPage() {
       await api.delete(`/api/services/${serviceToDelete._id}`);
       toast.success("Service deleted successfully.");
       fetchServices();
+      fetchClients?.(true);
     } catch (err) {
       console.error("Failed to delete service:", err);
       toast.error(err.response?.data?.message || "Failed to delete service.");
@@ -77,6 +79,7 @@ export default function AdminServicesPage() {
       }
       setModalOpen(false);
       fetchServices();
+      fetchClients?.(true);
     } catch (err) {
       console.error("Failed to save service:", err);
       toast.error(err.response?.data?.message || "Failed to save service.");

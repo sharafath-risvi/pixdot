@@ -7,6 +7,33 @@ import ProposalSummaryPanel from "../../components/ProposalSummaryPanel.jsx";
 
 const optionKey = (lineId, optionId) => `${lineId}::${optionId}`;
 
+const computeQtyFromSelection = (storedSelection, lineItems, getKey) => {
+  const nextQty = {};
+  const lines = storedSelection?.lines || [];
+  for (const line of lines) {
+    if (line.lineId && line.optionId && line.qty > 0) {
+      nextQty[getKey(line.lineId, line.optionId)] = line.qty;
+    } else {
+      for (const row of (lineItems || [])) {
+        for (const opt of (row.options ?? [])) {
+          const expectedLabel = `${row.name} - ${opt.label}`;
+          if (line.label === expectedLabel || line.label?.startsWith(expectedLabel)) {
+            let q = line.qty;
+            if (q === undefined || q === null) {
+              const match = line.sub?.match(/Qty\s+(\d+)/i);
+              q = match ? Number(match[1]) : (line.price && opt.price ? Math.round(line.price / opt.price) : 1);
+            }
+            if (q > 0) {
+              nextQty[getKey(row.id, opt.id)] = q;
+            }
+          }
+        }
+      }
+    }
+  }
+  return nextQty;
+};
+
 /**
  * Four-step quote wizard for services priced as line items with quantities
  * (packaging, website, and mobile app). Step 1: pick quantities, step 2:
@@ -25,9 +52,12 @@ export default function LineItemServicePage({
   const service = services.find((s) => s.id === serviceId);
   const detail = service?.detail;
   const lineItems = detail?.lineItems ?? [];
+  const storedSelection = selectedList?.find((item) => item.serviceId === service?.id);
   const didInteractRef = useRef(false);
 
-  const [qtyByOption, setQtyByOption] = useState({});
+  const [qtyByOption, setQtyByOption] = useState(() =>
+    computeQtyFromSelection(storedSelection, lineItems, optionKey)
+  );
   const [agreed, setAgreed] = useState(false);
   const [step, setStep] = useState(1);
   const [clientName, setClientName] = useState("");
@@ -36,13 +66,20 @@ export default function LineItemServicePage({
 
   useEffect(() => {
     didInteractRef.current = false;
-    setQtyByOption({});
     setAgreed(false);
     setStep(1);
     setClientName("");
     setClientEmail("");
     setClientPhone("");
   }, [service?.id]);
+
+  useEffect(() => {
+    const next = computeQtyFromSelection(storedSelection, lineItems, optionKey);
+    setQtyByOption((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+      return next;
+    });
+  }, [storedSelection, lineItems]);
 
   const { total, lines } = useMemo(() => {
     let sum = 0;
@@ -54,6 +91,9 @@ export default function LineItemServicePage({
         const price = qty * opt.price;
         sum += price;
         out.push({
+          lineId: row.id,
+          optionId: opt.id,
+          qty,
           label: `${row.name} - ${opt.label}`,
           sub: [opt.unit, `Qty ${qty}`, opt.note].filter(Boolean).join(" · "),
           price,
@@ -87,9 +127,12 @@ export default function LineItemServicePage({
     });
   };
 
-  const hasSelection = lines.length > 0;
+  const hasStoredSelection = Boolean(storedSelection?.lines?.length > 0);
+  const hasSelection = lines.length > 0 || hasStoredSelection;
+  const activeLines = lines.length > 0 ? lines : (storedSelection?.lines || []);
+  const activeTotal = lines.length > 0 ? total : (storedSelection?.total || 0);
   const contactOk = clientName.trim() && clientEmail.trim() && clientPhone.trim();
-  const selectionPayload = { serviceId: service.id, serviceName: service.name, lines, total };
+  const selectionPayload = { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal };
 
   const body = `${service.name}\n\nClient details\nName: ${clientName || "(not provided)"}\nEmail: ${clientEmail || "(not provided)"}\nPhone: ${clientPhone || "(not provided)"}\n\n${lines.map((x) => `• ${x.label}: ${x.sub} — ${formatInr(x.price)}`).join("\n")}\n\nIndicative subtotal: ${formatInr(total)}\n`;
   const mailto = `mailto:${encodeURIComponent(detail?.contactEmail ?? "hello@example.com")}?subject=${encodeURIComponent(`[${service.name}] Price enquiry`)}&body=${encodeURIComponent(body)}`;
@@ -141,32 +184,44 @@ export default function LineItemServicePage({
             {step === 1
               ? lineItems.map((row) => (
                   <div key={row.id} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:p-5">
-                    <h3 className="text-base font-bold text-slate-900">{row.name}</h3>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-base font-bold text-slate-900">{row.name}</h3>
+                      {row.blurb ? <p className="text-xs text-slate-500 sm:text-right">{row.blurb}</p> : null}
+                    </div>
                     <div className="mt-3 space-y-2">
                       {(row.options ?? []).map((opt) => {
                         const qty = qtyByOption[optionKey(row.id, opt.id)] ?? 0;
                         return (
                           <div
                             key={opt.id}
-                            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2"
+                            className={[
+                              "flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium transition",
+                              qty > 0
+                                ? "border-violet-500 bg-violet-50 text-violet-900 shadow-sm"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                            ].join(" ")}
                           >
                             <div>
                               <p>{opt.label}</p>
-                              <p className="text-xs font-semibold text-slate-600">{formatInr(opt.price)}</p>
+                              <p className="text-xs font-semibold text-slate-600">
+                                {formatInr(opt.price)}
+                                {opt.unit ? ` · ${opt.unit}` : ""}
+                                {opt.note ? ` · ${opt.note}` : ""}
+                              </p>
                             </div>
-                            <div className="inline-flex items-center gap-2">
+                            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1">
                               <button
                                 type="button"
                                 onClick={() => bump(row.id, opt.id, -1)}
-                                className="h-7 w-7 rounded-md border border-slate-300"
+                                className="h-7 w-7 rounded-md border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-100"
                               >
                                 -
                               </button>
-                              <span className="w-8 text-center">{qty}</span>
+                              <span className="w-8 text-center text-sm font-semibold text-slate-900">{qty}</span>
                               <button
                                 type="button"
                                 onClick={() => bump(row.id, opt.id, 1)}
-                                className="h-7 w-7 rounded-md border border-slate-300"
+                                className="h-7 w-7 rounded-md border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-100"
                               >
                                 +
                               </button>
@@ -181,12 +236,12 @@ export default function LineItemServicePage({
 
             {step === 2 ? (
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                {lines.length === 0 ? (
+                {activeLines.length === 0 ? (
                   <p className="text-sm text-slate-500">No items selected.</p>
                 ) : (
                   <>
                     <ul className="space-y-2 text-sm text-slate-700">
-                      {lines.map((x, i) => (
+                      {activeLines.map((x, i) => (
                         <li key={i} className="flex justify-between gap-2 border-b border-slate-100 pb-2">
                           <span>{x.label}</span>
                           <span>{formatInr(x.price)}</span>

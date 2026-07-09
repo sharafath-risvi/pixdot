@@ -7,6 +7,33 @@ import ProposalSummaryPanel from "../../components/ProposalSummaryPanel.jsx";
 
 const getOptionKey = (lineId, optionId) => `${lineId}::${optionId}`;
 
+const computeQtyFromSelection = (storedSelection, lineItems, getKey) => {
+  const nextQty = {};
+  const lines = storedSelection?.lines || [];
+  for (const line of lines) {
+    if (line.lineId && line.optionId && line.qty > 0) {
+      nextQty[getKey(line.lineId, line.optionId)] = line.qty;
+    } else {
+      for (const row of (lineItems || [])) {
+        for (const opt of (row.options ?? [])) {
+          const expectedLabel = `${row.name} - ${opt.label}`;
+          if (line.label === expectedLabel || line.label?.startsWith(expectedLabel)) {
+            let q = line.qty;
+            if (q === undefined || q === null) {
+              const match = line.sub?.match(/Qty\s+(\d+)/i);
+              q = match ? Number(match[1]) : (line.price && opt.price ? Math.round(line.price / opt.price) : 1);
+            }
+            if (q > 0) {
+              nextQty[getKey(row.id, opt.id)] = q;
+            }
+          }
+        }
+      }
+    }
+  }
+  return nextQty;
+};
+
 function BackLink() {
   return (
     <Link
@@ -33,8 +60,11 @@ export default function BrandingService({
   const service = services.find((s) => s.id === "brand-creative");
   const d = service?.detail;
   const lineItems = d?.lineItems ?? [];
+  const storedSelection = selectedList?.find((item) => item.serviceId === service?.id);
   const didInteractRef = useRef(false);
-  const [qtyByOption, setQtyByOption] = useState({});
+  const [qtyByOption, setQtyByOption] = useState(() =>
+    computeQtyFromSelection(storedSelection, lineItems, getOptionKey)
+  );
   const [agreed, setAgreed] = useState(false);
   const [step, setStep] = useState(1);
   const [clientName, setClientName] = useState("");
@@ -43,13 +73,20 @@ export default function BrandingService({
 
   useEffect(() => {
     didInteractRef.current = false;
-    setQtyByOption({});
     setAgreed(false);
     setStep(1);
     setClientName("");
     setClientEmail("");
     setClientPhone("");
   }, [service?.id]);
+
+  useEffect(() => {
+    const next = computeQtyFromSelection(storedSelection, lineItems, getOptionKey);
+    setQtyByOption((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+      return next;
+    });
+  }, [storedSelection, lineItems]);
 
   const { total, displayLines } = useMemo(() => {
     let t = 0;
@@ -61,6 +98,9 @@ export default function BrandingService({
         const amount = q * opt.price;
         t += amount;
         out.push({
+          lineId: row.id,
+          optionId: opt.id,
+          qty: q,
           label: `${row.name} - ${opt.label}`,
           sub: [opt.unit, `Qty ${q}`, opt.note].filter(Boolean).join(" · "),
           price: amount,
@@ -101,11 +141,14 @@ export default function BrandingService({
 
   const email = d?.contactEmail ?? "hello@example.com";
   const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(`[${service.name}] Price enquiry`)}&body=${encodeURIComponent(body)}`;
-  const hasSelection = displayLines.length > 0;
+  const hasStoredSelection = Boolean(storedSelection?.lines?.length > 0);
+  const hasSelection = displayLines.length > 0 || hasStoredSelection;
+  const activeLines = displayLines.length > 0 ? displayLines : (storedSelection?.lines || []);
+  const activeTotal = displayLines.length > 0 ? total : (storedSelection?.total || 0);
   const contactOk = clientName.trim() && clientEmail.trim() && clientPhone.trim();
   const handleStepNext = () => {
     if (step === 2 && hasSelection && onMultiDecision) {
-      onMultiDecision("no", { serviceId: service.id, serviceName: service.name, lines: displayLines, total });
+      onMultiDecision("no", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal });
       return;
     }
     setStep((s) => Math.min(4, s + 1));
@@ -157,15 +200,15 @@ export default function BrandingService({
             {step === 2 ? (
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900">Preview selected items</h3>
-                {displayLines.length === 0 ? <p className="mt-2 text-sm text-slate-500">No items selected.</p> : <ul className="mt-4 space-y-2 text-sm text-slate-700">{displayLines.map((k, i) => <li key={i} className="flex justify-between gap-2 border-b border-slate-100 pb-2 last:border-0"><span><span className="font-medium text-slate-900">{k.label}</span>{k.sub ? <span className="mt-0.5 block text-xs text-slate-500">{k.sub}</span> : null}</span><span className="shrink-0 font-semibold text-slate-800">{formatInr(k.price)}</span></li>)}</ul>}
-                {displayLines.length > 0 ? (
+                {activeLines.length === 0 ? <p className="mt-2 text-sm text-slate-500">No items selected.</p> : <ul className="mt-4 space-y-2 text-sm text-slate-700">{activeLines.map((k, i) => <li key={i} className="flex justify-between gap-2 border-b border-slate-100 pb-2 last:border-0"><span><span className="font-medium text-slate-900">{k.label}</span>{k.sub ? <span className="mt-0.5 block text-xs text-slate-500">{k.sub}</span> : null}</span><span className="shrink-0 font-semibold text-slate-800">{formatInr(k.price)}</span></li>)}</ul>}
+                {activeLines.length > 0 ? (
                   <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3">
                     <p className="text-sm font-semibold text-violet-900">Need another service?</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() =>
-                          onMultiDecision?.("yes", { serviceId: service.id, serviceName: service.name, lines: displayLines, total })
+                          onMultiDecision?.("yes", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal })
                         }
                         className="rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-sm font-semibold text-violet-700 hover:bg-violet-100"
                       >
@@ -174,7 +217,7 @@ export default function BrandingService({
                       <button
                         type="button"
                         onClick={() =>
-                          onMultiDecision?.("no", { serviceId: service.id, serviceName: service.name, lines: displayLines, total })
+                          onMultiDecision?.("no", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal })
                         }
                         className="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-violet-700"
                       >

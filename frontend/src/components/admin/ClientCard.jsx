@@ -3,8 +3,9 @@ import { normalizeServiceName, serviceLabel } from "../../lib/agencyServices.js"
 import styles from "./Admin.module.css";
 
 function progressFromServices(services = []) {
-  if (!services.length) return 0;
-  return Math.min(100, 35 + services.length * 18);
+  if (!services || !services.length) return 0;
+  const totalProgress = services.reduce((sum, s) => sum + (Number(s?.progress) || 0), 0);
+  return Math.round(totalProgress / services.length);
 }
 
 export default function ClientCard({ client, onClick, onViewDetails, onEdit, onOpenCalendar }) {

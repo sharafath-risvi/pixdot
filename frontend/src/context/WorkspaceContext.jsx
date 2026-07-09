@@ -39,10 +39,10 @@ export function WorkspaceProvider({ children }) {
   }, [fetchStaff]);
 
   // Fetch clients from backend
-  const fetchClients = useCallback(async () => {
+  const fetchClients = useCallback(async (silent = false) => {
     if (!isAuthenticated || role === "client") return;
     try {
-      setClientsLoading(true);
+      if (!silent) setClientsLoading(true);
       const response = await api.get("/api/clients");
       // Map MongoDB _id to id to match existing frontend code expectation
       const fetchedClients = response.data.data.map(c => ({ ...c, id: c._id }));
@@ -50,7 +50,7 @@ export function WorkspaceProvider({ children }) {
     } catch (err) {
       console.error("Failed to fetch clients from backend:", err);
     } finally {
-      setClientsLoading(false);
+      if (!silent) setClientsLoading(false);
     }
   }, [isAuthenticated, role]);
 

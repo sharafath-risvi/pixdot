@@ -9,7 +9,7 @@ export default function ServicesSection() {
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-500">Our services</p>
             <h2 className="mt-3 text-pretty font-sans text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-              Elevate your digital presence.
+              Elevate your digital presenceeeeee.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-slate-600 sm:text-lg">
               Explore our premium services below. Each offering is crafted to accelerate your growth and deliver measurable results.
