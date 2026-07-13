@@ -29,8 +29,10 @@ app.use(
       const allowedOrigins = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://app.pixdotsolutions.com",
+        "https://pixdotsolutions.com",
         process.env.FRONTEND_ORIGIN
-      ];
+      ].filter(Boolean);
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
