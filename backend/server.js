@@ -75,7 +75,7 @@ app.use(errorHandler);
 // ─── Start Server ──────────────────────────────────────────────────────────
 if (require.main === module) {
   const PORT = process.env.PORT || 3001;
-  app.listen(PORT, () => {
+  app.listen(PORT, "::", () => {
     console.log(`\n✅ Pixdot backend running at http://localhost:${PORT}`);
     console.log(`   Environment : ${process.env.NODE_ENV || "development"}`);
     console.log(`   MongoDB URI : ${process.env.MONGO_URI}`);
