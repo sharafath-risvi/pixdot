@@ -18,7 +18,9 @@ const quoteRoutes = require("./routes/quote.routes");
 const app = express();
 
 // ─── Database Connection ───────────────────────────────────────────────────
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
 // ─── Global Middleware ─────────────────────────────────────────────────────
 app.set("trust proxy", 1);
@@ -71,9 +73,13 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ─── Start Server ──────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`\n✅ Pixdot backend running at http://localhost:${PORT}`);
-  console.log(`   Environment : ${process.env.NODE_ENV || "development"}`);
-  console.log(`   MongoDB URI : ${process.env.MONGO_URI}`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`\n✅ Pixdot backend running at http://localhost:${PORT}`);
+    console.log(`   Environment : ${process.env.NODE_ENV || "development"}`);
+    console.log(`   MongoDB URI : ${process.env.MONGO_URI}`);
+  });
+}
+
+module.exports = app;

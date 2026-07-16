@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "seed:admin": "node utils/seedAdmin.js",
     "seed:pricing": "node utils/seedPricing.js",
-    "seed": "node utils/seedAdmin.js && node utils/seedPricing.js"
+    "seed": "node utils/seedAdmin.js && node utils/seedPricing.js",
+    "test": "jest --runInBand --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,9 @@
     "nodemailer": "^9.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }
