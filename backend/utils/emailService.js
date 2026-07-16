@@ -53,6 +53,7 @@ const buildProposalText = (quote) => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
+    timeZone: "Asia/Kolkata",
   });
 
   const servicesText = buildServicesText(quote.selectedServices || []);
@@ -131,6 +132,7 @@ const buildProposalHtml = (quote) => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
+    timeZone: "Asia/Kolkata",
   });
 
   const selectedServices = quote.selectedServices || [];
