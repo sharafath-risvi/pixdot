@@ -7,7 +7,7 @@ export default function ServicesSection() {
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 sm:py-24">
         <header className="mb-12 flex flex-col gap-4 sm:mb-16 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-500">Pixdot solutions services</p>
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-500">Pixdot services</p>
             <h2 className="mt-3 text-pretty font-sans text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
               Elevate your digital presence.
             </h2>
