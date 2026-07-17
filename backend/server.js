@@ -61,8 +61,29 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/notes", notesRoutes);
 app.use("/api/pricing", pricingRoutes);
 app.use("/api/settings", settingsRoutes);
-app.use("/api/services", clientServiceRoutes);
 app.use("/api/quotes", quoteRoutes);
+
+// ─── Automated Webhook Deploy Endpoint ─────────────────────────────────────
+app.post("/api/deploy-webhook", (req, res) => {
+  const secret = process.env.DEPLOY_SECRET || "pixdot_deploy_secret_2026";
+  const providedToken = req.query.token || req.headers["x-deploy-token"];
+  if (providedToken !== secret) {
+    return res.status(401).json({ success: false, message: "Unauthorized deploy token" });
+  }
+
+  console.log("🚀 Webhook deploy triggered! Starting git pull & build...");
+  const { exec } = require("child_process");
+  exec("cd /opt/pixdot/app && git reset --hard origin/main && git pull origin main && cd frontend && npm run build", (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Deploy execution error: ${error.message}`);
+      return;
+    }
+    console.log(`Deploy finished cleanly:\n${stdout}`);
+  });
+
+  // Return immediately so GitHub gets 200 OK without waiting for npm run build
+  res.json({ success: true, message: "Deployment triggered in background 🚀" });
+});
 
 // ─── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
