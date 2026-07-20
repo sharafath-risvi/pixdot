@@ -1,17 +1,18 @@
 /* Client portal — minimal premium (read-only focus) */
 .clientPage {
-  --c-bg0: #f4f9fc;
-  --c-bg1: #e8f4fa;
-  --c-surface: var(--dash-surface, rgba(255, 255, 255, 0.96));
-  --c-border: var(--dash-border, rgba(73, 118, 159, 0.28));
-  --c-text: var(--dash-text, #001d39);
-  --c-muted: var(--dash-muted, #49769f);
+  --c-bg0: #f7f7fb;
+  --c-bg1: #f1f2f6;
+  --c-surface: var(--dash-surface, #ffffff);
+  --c-border: var(--dash-border, #e2e2ea);
+  --c-text: var(--dash-text, #0e0e14);
+  --c-muted: var(--dash-muted, #656575);
   --c-accent: var(--dash-accent, #0a4174);
-  --c-accent-soft: var(--dash-accent-soft, rgba(123, 189, 232, 0.28));
-  --c-shadow: var(--dash-shadow, 0 12px 40px -24px rgba(0, 29, 57, 0.22));
+  --c-accent-soft: var(--dash-accent-soft, rgba(123, 189, 232, 0.18));
+  --c-shadow: var(--dash-shadow, 0 4px 24px -8px rgba(14, 14, 20, 0.08));
   --c-radius: 14px;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--dash-font, "Space Grotesk", ui-sans-serif, system-ui, sans-serif);
   background: var(--dash-bg-gradient) !important;
+  letter-spacing: -0.01em;
 }
 
 .clientDesktopBar {
@@ -332,18 +333,20 @@
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
-  border-radius: 10px;
-  border: 1px solid rgba(10, 65, 116, 0.35);
-  background: linear-gradient(180deg, var(--palette-600) 0%, var(--palette-800) 100%);
+  letter-spacing: -0.01em;
+  border-radius: 12px;
+  border: 1px solid var(--palette-800);
+  background: var(--palette-800);
   color: #fff;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 2px 6px -1px rgba(10, 65, 116, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: var(--c-shadow);
 }
 
 .clientBtnPrimary:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: linear-gradient(180deg, var(--palette-800) 0%, var(--palette-900) 100%);
+  background: var(--palette-900);
+  border-color: var(--palette-900);
 }
 
 .clientBtnPrimary:disabled {

@@ -81,7 +81,7 @@ export default function ServiceDotMenu() {
               to={it.to}
               className={[
                 "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition",
-                location.pathname === it.to ? "bg-slate-900 text-white" : "text-slate-900 hover:bg-slate-100",
+                location.pathname === it.to ? "bg-brand-50 text-brand-900 border border-brand-200" : "text-slate-800 hover:bg-surface-muted",
               ].join(" ")}
             >
               {it.label}

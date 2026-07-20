@@ -28,11 +28,25 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 import { ToastProvider } from "./context/ToastContext.jsx";
 
-function Shell({ children, fullWidth = false, hideNavbar = false }) {
+function Shell({ children, fullWidth = false, hideNavbar = false, lockViewport = false }) {
   return (
-    <div className="flex min-h-screen flex-col bg-transparent text-slate-900">
+    <div
+      className={[
+        "flex flex-col bg-white text-ink",
+        lockViewport ? "h-dvh max-h-dvh overflow-hidden" : "min-h-screen",
+      ].join(" ")}
+    >
       {!hideNavbar ? <Navbar /> : null}
-      <main className={fullWidth ? "w-full flex-1 px-0 py-0" : "mx-auto w-full flex-1"}>
+      <main
+        className={[
+          fullWidth ? "w-full flex-1 px-0 py-0" : "mx-auto w-full flex-1",
+          lockViewport
+            ? "mt-[4.25rem] h-[calc(100dvh-4.25rem)] min-h-0 overflow-hidden"
+            : !hideNavbar
+              ? "pt-[4.25rem]"
+              : "",
+        ].join(" ")}
+      >
         {children}
       </main>
     </div>
@@ -77,14 +91,14 @@ export default function App() {
                 path="/signup"
                 element={
                   <Shell>
-                    <p className="text-slate-600">Sign up page — connect your form here.</p>
+                    <p className="text-ink-muted">Sign up page — connect your form here.</p>
                   </Shell>
                 }
               />
               <Route
                 path="/services/:serviceId"
                 element={
-                  <Shell fullWidth>
+                  <Shell fullWidth lockViewport>
                     <ServiceDetails />
                   </Shell>
                 }

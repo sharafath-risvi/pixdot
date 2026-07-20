@@ -48,6 +48,9 @@ export default function ServiceDetails() {
   const [submitError, setSubmitError] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [serviceId, multiStep]);
   const selectedList = useMemo(() => Object.values(multiSelections), [multiSelections]);
   const selectedTotal = useMemo(
     () => selectedList.reduce((sum, item) => sum + (item.total ?? 0), 0),
@@ -119,8 +122,14 @@ export default function ServiceDetails() {
     });
     if (decision === "no") {
       setMultiStep("agreement");
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
-  }, []);
+    if (decision === "yes") {
+      setMultiStep("service");
+      navigate("/");
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [navigate]);
 
   const removeLineItem = useCallback((serviceId, lineIndex) => {
     setMultiSelections((prev) => {
@@ -201,7 +210,7 @@ export default function ServiceDetails() {
       </p>
       <Link
         to="/"
-        className="mt-8 inline-flex rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+        className="mt-8 inline-flex rounded-xl bg-brand-800 px-6 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-900"
       >
         Back to home
       </Link>
@@ -222,45 +231,45 @@ export default function ServiceDetails() {
   // Removed old mailto logic, using submitQuote via API.
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col bg-slate-100/50 xl:flex-row">
-      <aside className="hidden w-full shrink-0 border-b border-slate-200 bg-white xl:block xl:w-80 xl:min-h-0 xl:border-b-0 xl:border-r">
-        <div className="z-10 flex flex-col gap-4 p-4 sm:p-5 xl:sticky xl:top-0 xl:max-h-[min(100vh-3.5rem,100%)]">
+    <div className="service-dashboard">
+      <aside className="service-dashboard-sidebar scrollbar-hide">
+        <div className="flex flex-col gap-4 p-4 sm:p-5">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-white"
           >
-            <FaHouse className="h-4 w-4 shrink-0" aria-hidden />
+            <FaHouse className="h-4 w-4 shrink-0 text-[#0a4174]" aria-hidden />
             Home
           </Link>
 
-          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-sm">
+          <div className="rounded-2xl border border-line bg-white p-3 shadow-soft">
             <p className="mb-2 px-1 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">
               Services
             </p>
-            <nav className="flex flex-col gap-1.5 overflow-y-auto pb-2 pr-1 xl:max-h-[68vh]" aria-label="All services">
+            <nav className="flex flex-col gap-1.5 pb-1" aria-label="All services">
               {services.map((s) => {
                 const iconName = s.icon ?? defaultIconName;
                 return (
                   <NavLink
                     key={s.id}
                     to={`/services/${s.id}`}
-                    className="rounded-xl outline-none ring-violet-400 ring-offset-2 focus-visible:ring-2"
+                    className="rounded-xl outline-none ring-brand-400 ring-offset-2 focus-visible:ring-2"
                   >
                     {({ isActive }) => (
                       <div
                         className={[
                           "group flex min-h-[3.2rem] items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-sm font-medium transition-all duration-200",
                           isActive
-                            ? "border-slate-900 bg-slate-900 text-white shadow-md"
-                            : "border-transparent bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-100",
+                            ? "border-brand-700 bg-brand-50 text-brand-900 shadow-soft"
+                            : "border-transparent bg-white text-slate-800 hover:border-slate-200 hover:bg-slate-100",
                         ].join(" ")}
                       >
                         <span
                           className={[
                             "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition",
                             isActive
-                              ? "bg-white/15 text-white"
-                                : "bg-slate-200 text-slate-800",
+                              ? "bg-[#0a4174] text-[#7bbde8]"
+                              : "bg-slate-200 text-[#0a4174]",
                           ].join(" ")}
                         >
                           <ServiceIcon
@@ -268,7 +277,7 @@ export default function ServiceDetails() {
                             className="h-4 w-4 shrink-0"
                           />
                         </span>
-                        <span className="min-w-0 flex-1 text-[13px] leading-snug">{s.name}</span>
+                        <span className="min-w-0 flex-1 text-[13px] leading-snug text-inherit">{s.name}</span>
                       </div>
                     )}
                   </NavLink>
@@ -279,9 +288,9 @@ export default function ServiceDetails() {
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1 overflow-y-auto">
+      <div className="service-dashboard-main">
         {multiStep === "service" ? rightPanel : (
-          <div className="p-3 sm:p-4 lg:p-5">
+          <div className="scrollbar-hide h-full overflow-y-auto scroll-smooth p-3 sm:p-4 lg:p-5">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
                 Multi service checkout
@@ -295,10 +304,10 @@ export default function ServiceDetails() {
                           <div className="w-full min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <p className="font-bold text-slate-900 text-base">{item.serviceName}</p>
-                              <p className="font-bold text-violet-700 text-sm">{formatInr(item.total)}</p>
+                              <p className="font-bold text-brand-700 text-sm">{formatInr(item.total)}</p>
                             </div>
                             {item.lines && item.lines.length > 0 && (
-                              <ul className="mt-2 pl-2 space-y-1 text-xs text-slate-600 border-l-2 border-violet-300">
+                              <ul className="mt-2 pl-2 space-y-1 text-xs text-slate-600 border-l-2 border-brand-300">
                                 {item.lines.map((line, idx) => (
                                   <li key={idx} className="flex justify-between gap-2">
                                     <span className="truncate font-medium">- {line.label}</span>
@@ -349,7 +358,8 @@ export default function ServiceDetails() {
                       type="button"
                       disabled={!allAgreed || selectedList.length === 0}
                       onClick={() => setMultiStep("contact")}
-                      className={["rounded-xl px-4 py-2 text-sm font-semibold text-white", !allAgreed || selectedList.length === 0 ? "cursor-not-allowed bg-slate-300" : "bg-violet-600 hover:bg-violet-700"].join(" ")}
+                      className={["btn-cta", !allAgreed || selectedList.length === 0 ? "is-disabled" : ""].join(" ")}
+                      style={{ flex: "0 0 auto" }}
                     >
                       Continue
                     </button>
@@ -382,7 +392,7 @@ export default function ServiceDetails() {
                         sessionStorage.removeItem("pixdot_cart_selections");
                       } catch {}
                     }}
-                    className="mt-6 rounded-xl bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    className="mt-6 rounded-xl bg-brand-800 px-6 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-900"
                   >
                     Done
                   </button>
@@ -395,15 +405,15 @@ export default function ServiceDetails() {
                     </div>
                   )}
                   <div>
-                    <input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Your name" className={["w-full rounded-xl border px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/20", validationErrors.name ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-violet-500"].join(" ")} />
+                    <input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Your name" className={["w-full rounded-xl border px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20", validationErrors.name ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-brand-500"].join(" ")} />
                     {validationErrors.name && <p className="mt-1.5 text-xs font-medium text-red-500">{validationErrors.name}</p>}
                   </div>
                   <div>
-                    <input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="Your email" type="email" className={["w-full rounded-xl border px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/20", validationErrors.email ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-violet-500"].join(" ")} />
+                    <input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="Your email" type="email" className={["w-full rounded-xl border px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20", validationErrors.email ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-brand-500"].join(" ")} />
                     {validationErrors.email && <p className="mt-1.5 text-xs font-medium text-red-500">{validationErrors.email}</p>}
                   </div>
                   <div>
-                    <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="Your phone number" className={["w-full rounded-xl border px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/20", validationErrors.phone ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-violet-500"].join(" ")} />
+                    <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="Your phone number" className={["w-full rounded-xl border px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20", validationErrors.phone ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-brand-500"].join(" ")} />
                     {validationErrors.phone && <p className="mt-1.5 text-xs font-medium text-red-500">{validationErrors.phone}</p>}
                   </div>
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -411,7 +421,8 @@ export default function ServiceDetails() {
                       type="button"
                       onClick={() => setMultiStep("agreement")}
                       disabled={isSubmitting}
-                      className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:opacity-50"
+                      className="btn-outline"
+                      style={{ flex: "0 0 auto", minWidth: "7rem" }}
                     >
                       Back
                     </button>
@@ -419,7 +430,8 @@ export default function ServiceDetails() {
                       type="button"
                       onClick={submitQuote}
                       disabled={isSubmitting || selectedList.length === 0 || !allAgreed}
-                      className={["rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all", (isSubmitting || selectedList.length === 0 || !allAgreed) ? "cursor-not-allowed bg-slate-300" : "bg-gradient-to-b from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 hover:shadow-md hover:-translate-y-0.5"].join(" ")}
+                      className="btn-cta"
+                      style={{ flex: "0 0 auto", minWidth: "8rem" }}
                     >
                       {isSubmitting ? "Sending..." : "Send Mail"}
                     </button>

@@ -31,17 +31,17 @@ export default function ProposalSummaryPanel({
   }, [displayList]);
 
   return (
-    <div className="rounded-3xl border border-slate-200/90 bg-gradient-to-b from-slate-50/80 to-white p-5 shadow-xl shadow-slate-200/40 sm:p-6">
-      <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
+    <div className="relative overflow-hidden rounded-[1.5rem] border border-transparent bg-[linear-gradient(#fff,#fff)_padding-box,linear-gradient(135deg,rgba(10,65,116,0.16),rgba(226,226,234,0.9),rgba(123,189,232,0.35))_border-box] p-5 shadow-card sm:p-6">
+      <div className="flex items-center justify-between border-b border-line pb-4">
         <div>
-          <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-violet-600">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-500">
             Agency Quotation
           </p>
-          <h2 className="mt-0.5 text-lg font-black tracking-tight text-slate-900 sm:text-xl">
+          <h2 className="mt-1 text-lg font-medium tracking-heading text-ink sm:text-xl">
             Proposal Summary
           </h2>
         </div>
-        <span className="inline-flex items-center justify-center rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white shadow-sm">
+        <span className="inline-flex items-center justify-center rounded-xl bg-brand-800 px-3 py-1 text-xs font-semibold text-white shadow-soft">
           {displayList.length} {displayList.length === 1 ? "Category" : "Categories"}
         </span>
       </div>
@@ -60,13 +60,13 @@ export default function ProposalSummaryPanel({
             </p>
           </div>
         ) : (
-          <div className="max-h-[42vh] space-y-4 overflow-y-auto pr-1">
+          <div className="mt-4 space-y-4">
             {displayList.map((item) => {
               const isCurrent = currentSelection && item.serviceId === currentSelection.serviceId;
               return (
                 <div
                   key={item.serviceId}
-                  className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
+                  className="proposal-item-enter rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
                     <span className="truncate text-sm font-bold text-slate-900">{item.serviceName}</span>
@@ -102,7 +102,10 @@ export default function ProposalSummaryPanel({
                   {item.lines && item.lines.length > 0 && (
                     <ul className="mt-3 space-y-2.5">
                       {item.lines.map((line, idx) => (
-                        <li key={idx} className="flex items-start justify-between gap-3 text-xs">
+                        <li
+                          key={`${item.serviceId}-${line.lineId ?? ""}-${line.optionId ?? ""}-${line.label}-${line.qty ?? idx}-${line.price}`}
+                          className="proposal-item-enter flex items-start justify-between gap-3 text-xs"
+                        >
                           <div className="min-w-0 flex-1">
                             <p className="font-semibold leading-snug text-slate-800">{line.label}</p>
                             {line.sub && <p className="mt-0.5 leading-normal text-[11px] text-slate-500">{line.sub}</p>}
@@ -134,7 +137,7 @@ export default function ProposalSummaryPanel({
 
                   <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs">
                     <span className="font-semibold text-slate-500">Category Subtotal</span>
-                    <span className="font-black text-violet-700">{formatInr(item.total)}</span>
+                    <span className="font-black text-brand-700">{formatInr(item.total)}</span>
                   </div>
                 </div>
               );
@@ -144,17 +147,17 @@ export default function ProposalSummaryPanel({
       </div>
 
       {displayList.length > 0 && (
-        <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-white shadow-md">
+        <div className="mt-5 rounded-2xl border border-line bg-surface-muted p-4 shadow-soft">
           <div className="flex items-baseline justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-500">
                 Total Estimate
               </p>
-              <p className="text-sm font-semibold text-slate-200">Grand Total</p>
+              <p className="text-sm font-medium text-ink">Grand Total</p>
             </div>
-            <span className="text-xl font-black text-white sm:text-2xl">{formatInr(displayTotal)}</span>
+            <span className="text-xl font-semibold tracking-heading text-brand-800 sm:text-2xl">{formatInr(displayTotal)}</span>
           </div>
-          <p className="mt-2 border-t border-slate-800 pt-2 text-[11px] leading-relaxed text-slate-400">
+          <p className="mt-2 border-t border-line pt-2 text-[11px] leading-relaxed text-ink-muted">
             Indicative quotation for all selected branding, design, and digital marketing services.
           </p>
         </div>

@@ -3,13 +3,15 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 16px;
+  padding: 20px;
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
   background: var(--dash-bg-gradient);
   color: var(--dash-text);
+  font-family: var(--dash-font);
+  letter-spacing: -0.01em;
 }
 
 .topbar {
@@ -19,18 +21,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid var(--dash-border);
+  border-radius: 16px;
+  padding: 14px 18px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 18px 38px -34px rgba(15, 23, 42, 0.55);
+  box-shadow: var(--dash-shadow);
 }
 
 .topbarTitle {
   font-size: 20px;
-  font-weight: 700;
-  color: #020617;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--dash-text);
 }
 
 .topbarActions {
@@ -43,27 +46,32 @@
 .buttonSecondary,
 .buttonDanger {
   border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 9px 14px;
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 
 .buttonPrimary {
-  background: linear-gradient(180deg, var(--palette-600) 0%, var(--palette-800) 100%);
+  background: var(--palette-800);
   color: #ffffff;
-  box-shadow: 0 2px 6px -1px rgba(10, 65, 116, 0.2);
+  box-shadow: var(--dash-shadow);
   border: 1px solid var(--palette-800);
 }
 
 .buttonPrimary:hover {
-  background: linear-gradient(180deg, var(--palette-800) 0%, var(--palette-900) 100%);
+  background: var(--palette-900);
+  border-color: var(--palette-900);
+  box-shadow: var(--dash-shadow-lg);
 }
 
 .buttonSecondary {
-  background: var(--palette-100);
+  background: var(--dash-surface-muted);
   color: var(--palette-800);
+  border: 1px solid var(--dash-border);
 }
 
 .buttonDanger {
@@ -74,11 +82,17 @@
 .buttonGhost {
   background: #ffffff;
   border: 1px solid var(--dash-border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.buttonGhost:hover {
+  background: var(--dash-surface-muted);
+  border-color: var(--dash-border-strong);
 }
 
 .layout {
@@ -94,21 +108,21 @@
   max-height: none;
   height: 100%;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid var(--palette-100);
+  background: #ffffff;
+  border: 1px solid var(--dash-border);
   border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 16px 34px -28px rgba(0, 29, 57, 0.2);
+  padding: 18px;
+  box-shadow: var(--dash-shadow);
   backdrop-filter: blur(6px);
 }
 
 .sidebarHeading {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--palette-600);
-  margin: 0 0 8px;
+  letter-spacing: 0.12em;
+  color: var(--dash-muted);
+  margin: 0 0 10px;
 }
 
 .sectionTabs {
@@ -226,24 +240,32 @@
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--palette-100);
+  background: #ffffff;
+  border: 1px solid var(--dash-border);
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--dash-shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--dash-shadow-lg);
+  border-color: var(--dash-border-strong);
 }
 
 .cardTitle {
   margin: 0;
   font-size: 19px;
-  font-weight: 700;
-  color: #020617;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--dash-text);
 }
 
 .cardSub {
   margin: 6px 0 0;
-  color: var(--palette-600);
+  color: var(--dash-muted);
   font-size: 14px;
+  line-height: 1.55;
 }
 
 .grid {
@@ -685,10 +707,11 @@
 }
 
 .staffCard {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--dash-border);
   border-radius: 14px;
-  padding: 12px;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: var(--dash-shadow);
 }
 
 .buttonPrimary,
@@ -956,31 +979,35 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, var(--palette-900) 0%, var(--palette-800) 45%, #2563eb 100%);
-  color: #fff;
+  padding: 22px 24px;
+  background: #ffffff;
+  color: var(--dash-text);
+  border-bottom: 1px solid var(--dash-border);
   border-radius: 18px 18px 0 0;
 }
 
 .pricingServiceHeroLabel {
   margin: 0 0 4px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.85;
+  letter-spacing: 0.12em;
+  color: var(--palette-500);
+  opacity: 1;
 }
 
 .pricingServiceHero h3 {
   margin: 0;
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: -0.03em;
 }
 
 .pricingServiceHero p {
   margin: 8px 0 0;
   font-size: 0.9rem;
-  opacity: 0.92;
+  color: var(--dash-muted);
+  line-height: 1.65;
   max-width: 52ch;
 }
 
@@ -990,17 +1017,20 @@
   gap: 8px;
   padding: 10px 16px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--palette-800);
+  border: 1px solid var(--palette-800);
   color: #fff;
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.15s ease;
+  box-shadow: var(--dash-shadow);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pricingHeroEditBtn:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--palette-900);
+  border-color: var(--palette-900);
+  box-shadow: var(--dash-shadow-lg);
 }
 
 .pricingPanelBody {
@@ -2008,34 +2038,37 @@
 }
 
 .hero {
-  background: var(--dash-hero-gradient);
-  border-radius: 24px;
-  padding: 28px;
-  color: #ffffff;
+  background: #ffffff;
+  border: 1px solid var(--dash-border);
+  border-radius: 20px;
+  padding: 32px;
+  color: var(--dash-text);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
-  box-shadow: 0 24px 48px -32px rgba(15, 23, 42, 0.65);
+  box-shadow: var(--dash-shadow);
 }
 
 .hero h1 {
   margin: 0;
   font-size: clamp(26px, 4vw, 36px);
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: -0.04em;
 }
 
 .hero p {
-  margin: 8px 0 0;
-  color: rgba(255, 255, 255, 0.75);
+  margin: 10px 0 0;
+  color: var(--dash-muted);
   font-size: 14px;
+  line-height: 1.65;
 }
 
 .heroContext {
   margin-top: 10px !important;
   font-size: 13px !important;
-  color: rgba(255, 255, 255, 0.55) !important;
+  color: var(--dash-muted-light) !important;
 }
 
 .heroBtns {
@@ -2047,20 +2080,28 @@
 .primaryBtn,
 .secondaryBtn {
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   height: 46px;
   padding: 0 18px;
   font-weight: 600;
   font-size: 14px;
+  letter-spacing: -0.01em;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .primaryBtn {
-  background: #ffffff;
-  color: var(--palette-900);
+  background: var(--palette-800);
+  color: #ffffff;
+  box-shadow: var(--dash-shadow);
+}
+
+.primaryBtn:hover {
+  background: var(--palette-900);
+  box-shadow: var(--dash-shadow-lg);
 }
 
 .primaryBtn:disabled {
@@ -2069,9 +2110,14 @@
 }
 
 .secondaryBtn {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  color: var(--dash-text);
+  border: 1px solid var(--dash-border);
+}
+
+.secondaryBtn:hover {
+  background: var(--dash-surface-muted);
+  border-color: var(--dash-border-strong);
 }
 
 .statsGrid {
@@ -2563,25 +2609,27 @@
 }
 
 .welcomeCard {
-  background: var(--dash-hero-gradient);
-  color: #fff;
+  background: #ffffff;
+  color: var(--dash-text);
+  border: 1px solid var(--dash-border);
   border-radius: 20px;
-  padding: 28px 24px;
-  box-shadow: var(--dash-shadow-lg);
+  padding: 32px 28px;
+  box-shadow: var(--dash-shadow);
 }
 
 .welcomeTitle {
   margin: 0;
   font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: -0.04em;
 }
 
 .welcomeSub {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--dash-muted);
   max-width: 52ch;
-  line-height: 1.55;
+  line-height: 1.65;
 }
 
 .miniStatsGrid {

@@ -1,28 +1,29 @@
 /* Staff workspace — professional UI layer */
 .staffPage {
-  --staff-bg0: #f4f9fc;
-  --staff-bg1: #e8f4fa;
-  --staff-surface: var(--dash-surface, rgba(255, 255, 255, 0.96));
+  --staff-bg0: #f7f7fb;
+  --staff-bg1: #f1f2f6;
+  --staff-surface: var(--dash-surface, #ffffff);
   --staff-surface-2: #ffffff;
-  --staff-border: var(--dash-border, rgba(73, 118, 159, 0.28));
-  --staff-border-strong: var(--dash-border-strong, rgba(10, 65, 116, 0.22));
-  --staff-text: var(--dash-text, #001d39);
-  --staff-muted: var(--dash-muted, #49769f);
-  --staff-muted2: var(--dash-muted-light, #6ea2b3);
+  --staff-border: var(--dash-border, #e2e2ea);
+  --staff-border-strong: var(--dash-border-strong, #d4d4de);
+  --staff-text: var(--dash-text, #0e0e14);
+  --staff-muted: var(--dash-muted, #656575);
+  --staff-muted2: var(--dash-muted-light, #8a8a9a);
   --staff-accent: var(--dash-accent, #0a4174);
   --staff-accent-hover: var(--dash-accent-hover, #001d39);
-  --staff-accent-soft: var(--dash-accent-soft, rgba(123, 189, 232, 0.28));
-  --staff-accent-ring: var(--dash-accent-ring, rgba(10, 65, 116, 0.35));
+  --staff-accent-soft: var(--dash-accent-soft, rgba(123, 189, 232, 0.18));
+  --staff-accent-ring: var(--dash-accent-ring, rgba(10, 65, 116, 0.18));
   --staff-success: #4e8ea2;
   --staff-success-soft: rgba(78, 142, 162, 0.15);
-  --staff-shadow: var(--dash-shadow, 0 12px 40px -24px rgba(0, 29, 57, 0.22));
-  --staff-shadow-lg: var(--dash-shadow-lg, 0 24px 48px -28px rgba(0, 29, 57, 0.28));
+  --staff-shadow: var(--dash-shadow, 0 4px 24px -8px rgba(14, 14, 20, 0.08));
+  --staff-shadow-lg: var(--dash-shadow-lg, 0 12px 40px -16px rgba(14, 14, 20, 0.12));
   --staff-radius: 16px;
   --staff-radius-sm: 12px;
-  --staff-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --staff-font: var(--dash-font, "Space Grotesk", ui-sans-serif, system-ui, sans-serif);
 
   font-family: var(--staff-font);
   background: var(--dash-bg-gradient) !important;
+  letter-spacing: -0.01em;
 }
 
 .staffPageHeadingRow {
@@ -96,20 +97,23 @@
   font-family: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.2;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 9px 16px;
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
-  background: linear-gradient(180deg, var(--palette-600) 0%, var(--palette-800) 100%);
-  border: 1px solid rgba(10, 65, 116, 0.45);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  background: var(--palette-800);
+  border: 1px solid var(--palette-800);
   color: #fff;
-  box-shadow: 0 2px 6px -1px rgba(10, 65, 116, 0.2);
+  box-shadow: var(--staff-shadow);
 }
 
 .staffBtnPrimary:hover {
-  background: linear-gradient(180deg, var(--palette-800) 0%, var(--staff-accent-hover) 100%);
+  background: var(--staff-accent-hover);
+  border-color: var(--staff-accent-hover);
   transform: translateY(-1px);
+  box-shadow: var(--staff-shadow-lg);
 }
 
 .staffBtnPrimary:focus-visible {

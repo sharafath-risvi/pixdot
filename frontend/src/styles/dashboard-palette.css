@@ -1,4 +1,4 @@
-/* Agency dashboard palette — shared across admin, staff, and client */
+/* Agency dashboard palette — light corporate system */
 :root {
   --palette-900: #001d39;
   --palette-800: #0a4174;
@@ -8,29 +8,32 @@
   --palette-300: #7bbde8;
   --palette-100: #bdd8e9;
 
-  --dash-text: var(--palette-900);
-  --dash-text-secondary: var(--palette-800);
-  --dash-muted: var(--palette-600);
-  --dash-muted-light: var(--palette-400);
+  --dash-text: #0e0e14;
+  --dash-text-secondary: #3a3a45;
+  --dash-muted: #656575;
+  --dash-muted-light: #8a8a9a;
 
   --dash-accent: var(--palette-800);
   --dash-accent-hover: var(--palette-900);
-  --dash-accent-soft: rgba(123, 189, 232, 0.28);
-  --dash-accent-ring: rgba(10, 65, 116, 0.35);
+  --dash-accent-soft: rgba(123, 189, 232, 0.18);
+  --dash-accent-ring: rgba(10, 65, 116, 0.18);
 
-  --dash-border: rgba(73, 118, 159, 0.18);
-  --dash-border-strong: rgba(10, 65, 116, 0.15);
-  --dash-surface: rgba(255, 255, 255, 0.96);
-  --dash-surface-muted: rgba(189, 216, 233, 0.35);
+  --dash-border: #e2e2ea;
+  --dash-border-strong: #d4d4de;
+  --dash-surface: #ffffff;
+  --dash-surface-muted: #f7f7fb;
 
-  --dash-bg-gradient:
-    radial-gradient(ellipse 80% 50% at 8% -5%, rgba(123, 189, 232, 0.45) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(189, 216, 233, 0.65) 0%, transparent 50%),
-    linear-gradient(180deg, #e8f4fa 0%, #f4f9fc 45%, #fafcfe 100%);
+  --dash-bg-gradient: #f7f7fb;
 
-  --dash-hero-gradient: linear-gradient(135deg, var(--palette-900) 0%, var(--palette-800) 55%, var(--palette-600) 100%);
-  --dash-shadow: 0 10px 30px -20px rgba(0, 29, 57, 0.15);
-  --dash-shadow-lg: 0 20px 40px -24px rgba(0, 29, 57, 0.20);
+  --dash-hero-gradient: linear-gradient(160deg, #f7f7fb 0%, #ffffff 55%, #eef7fb 100%);
+  --dash-shadow: 0 4px 24px -8px rgba(14, 14, 20, 0.08);
+  --dash-shadow-lg: 0 12px 40px -16px rgba(14, 14, 20, 0.12);
+
+  --dash-radius-sm: 10px;
+  --dash-radius-md: 12px;
+  --dash-radius-lg: 16px;
+  --dash-radius-xl: 20px;
+  --dash-font: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, Arial, sans-serif;
 }
 
 /* --- Phase 2: Micro-interactions & States --- */
@@ -42,7 +45,7 @@
 .dash-skeleton {
   animation: pulse-skeleton 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   background: var(--dash-border);
-  border-radius: 8px;
+  border-radius: var(--dash-radius-sm);
 }
 
 @keyframes modal-pop {
@@ -59,37 +62,39 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: 56px 28px;
   text-align: center;
-  border-radius: 16px;
+  border-radius: var(--dash-radius-lg);
   border: 1px dashed var(--dash-border-strong);
-  background: rgba(248, 250, 252, 0.4);
-  margin: 16px 0;
+  background: var(--dash-surface-muted);
+  margin: 20px 0;
 }
 
 .dash-empty-icon {
   font-size: 42px;
   color: var(--dash-muted-light);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   opacity: 0.6;
 }
 
 .dash-empty-title {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   color: var(--dash-text);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .dash-empty-desc {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
   color: var(--dash-muted);
   max-width: 320px;
 }
 
 /* Smooth Table Row Hovers */
 .dash-table tbody tr {
-  transition: background-color 0.15s ease;
+  transition: background-color 0.2s ease;
 }
 .dash-table tbody tr:hover {
   background-color: var(--dash-surface-muted);
