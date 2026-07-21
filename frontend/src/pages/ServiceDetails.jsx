@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { FaHouse } from "react-icons/fa6";
 import ServiceIcon from "../components/ServiceIcon.jsx";
@@ -9,6 +9,17 @@ import LineItemServicePage from "./services/LineItemServicePage.jsx";
 import { useServicePricing } from "../context/PricingContext.jsx";
 import { formatInr } from "../lib/format.js";
 import api from "../lib/api.js";
+
+/** Scroll window + service panel containers (mobile uses .service-workspace, not window). */
+function scrollServicePanelsToTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  document.querySelectorAll(".service-workspace, .service-dashboard-main .scrollbar-hide, .service-dashboard-sidebar").forEach((el) => {
+    el.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  });
+}
+
 export default function ServiceDetails() {
   const { serviceId } = useParams();
   const navigate = useNavigate();
@@ -23,6 +34,9 @@ export default function ServiceDetails() {
       return {};
     }
   });
+  const [serviceViewKey, setServiceViewKey] = useState(0);
+  const multiSelectionsRef = useRef(multiSelections);
+  multiSelectionsRef.current = multiSelections;
 
   useEffect(() => {
     try {
@@ -49,8 +63,11 @@ export default function ServiceDetails() {
   const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [serviceId, multiStep]);
+    scrollServicePanelsToTop();
+    const id = window.requestAnimationFrame(() => scrollServicePanelsToTop());
+    return () => window.cancelAnimationFrame(id);
+  }, [serviceId, multiStep, serviceViewKey]);
+
   const selectedList = useMemo(() => Object.values(multiSelections), [multiSelections]);
   const selectedTotal = useMemo(
     () => selectedList.reduce((sum, item) => sum + (item.total ?? 0), 0),
@@ -122,14 +139,25 @@ export default function ServiceDetails() {
     });
     if (decision === "no") {
       setMultiStep("agreement");
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      scrollServicePanelsToTop();
     }
     if (decision === "yes") {
       setMultiStep("service");
-      navigate("/");
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      // Stay on service section (not home). Prefer next unselected service at Step 1.
+      const selected = multiSelectionsRef.current;
+      const nextService =
+        services.find((s) => s.id !== payload.serviceId && !selected[s.id]) ||
+        services.find((s) => s.id !== payload.serviceId) ||
+        services.find((s) => s.id === payload.serviceId);
+      if (nextService) {
+        if (nextService.id === payload.serviceId) {
+          setServiceViewKey((k) => k + 1);
+        }
+        navigate(`/services/${nextService.id}`);
+      }
+      scrollServicePanelsToTop();
     }
-  }, [navigate]);
+  }, [navigate, services]);
 
   const removeLineItem = useCallback((serviceId, lineIndex) => {
     setMultiSelections((prev) => {
@@ -162,6 +190,7 @@ export default function ServiceDetails() {
   const editMultiService = useCallback((serviceIdToEdit) => {
     setMultiStep("service");
     navigate(`/services/${serviceIdToEdit}`);
+    scrollServicePanelsToTop();
   }, [navigate]);
 
   const submitQuote = async () => {
@@ -217,7 +246,7 @@ export default function ServiceDetails() {
     </div>
   ) : (
     <ServiceDetailContent
-      key={service.id}
+      key={`${service.id}-${serviceViewKey}`}
       service={service}
       onMultiDecision={handleMultiDecision}
       selectedList={selectedList}
@@ -253,6 +282,7 @@ export default function ServiceDetails() {
                   <NavLink
                     key={s.id}
                     to={`/services/${s.id}`}
+                    onClick={scrollServicePanelsToTop}
                     className="rounded-xl outline-none ring-brand-400 ring-offset-2 focus-visible:ring-2"
                   >
                     {({ isActive }) => (
@@ -349,7 +379,10 @@ export default function ServiceDetails() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => setMultiStep("service")}
+                      onClick={() => {
+                        setMultiStep("service");
+                        scrollServicePanelsToTop();
+                      }}
                       className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
                     >
                       Add more services

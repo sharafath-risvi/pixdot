@@ -1,6 +1,16 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import ServiceDotMenu from "./ServiceDotMenu.jsx";
 import ServiceStickyRail from "./ServiceStickyRail.jsx";
+
+function scrollWorkspaceToTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  document.querySelectorAll(".service-workspace").forEach((el) => {
+    el.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  });
+}
 
 /**
  * Third-image layout:
@@ -17,6 +27,12 @@ export default function ServiceWorkspace({
   children,
   proposal,
 }) {
+  useEffect(() => {
+    scrollWorkspaceToTop();
+    const id = window.requestAnimationFrame(() => scrollWorkspaceToTop());
+    return () => window.cancelAnimationFrame(id);
+  }, [service?.id, step]);
+
   return (
     <div className="service-workspace scrollbar-hide">
       <div className="p-2 sm:p-4 lg:p-5">
