@@ -219,13 +219,13 @@ export default function BrandingService({
                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
                       ].join(" ")}
                     >
-                      <div>
+                      <div className="flex flex-col gap-0.5">
                         <p>{opt.label}</p>
                         <p className="text-xs font-semibold text-slate-600">
                           {formatInr(opt.price)}
                           {opt.unit ? ` · ${opt.unit}` : ""}
-                          {opt.note ? ` · ${opt.note}` : ""}
                         </p>
+                        {opt.note ? <p className="text-xs text-slate-500">{opt.note}</p> : null}
                       </div>
                       <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1">
                         <button

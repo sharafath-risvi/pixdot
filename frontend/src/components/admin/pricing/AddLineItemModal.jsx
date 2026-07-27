@@ -13,7 +13,7 @@ export default function AddLineItemModal({ open, onClose, onSubmit }) {
         <h3 className={styles.cardTitle}>Add Line Item</h3>
         <div className={styles.formGrid}>
           <input className={styles.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Line item name" />
-          <input className={styles.input} value={blurb} onChange={(e) => setBlurb(e.target.value)} placeholder="Blurb (optional)" />
+          <input className={styles.input} value={blurb} onChange={(e) => setBlurb(e.target.value)} placeholder="Description (optional)" />
         </div>
         <div className={styles.modalActions}>
           <button type="button" className={styles.buttonGhost} onClick={onClose}>

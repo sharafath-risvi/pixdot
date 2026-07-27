@@ -1,7 +1,7 @@
 import OptionEditor from "./OptionEditor.jsx";
 import styles from "../Admin.module.css";
 
-export default function LineItemEditor({ line, onChange, onDelete, onAddOption, inlineAddOption = false }) {
+export default function LineItemEditor({ line, onChange, onDelete, onAddOption, onSave, inlineAddOption = false }) {
   return (
     <div className={styles.pricingLine}>
       <div className={styles.row}>
@@ -22,21 +22,22 @@ export default function LineItemEditor({ line, onChange, onDelete, onAddOption, 
         </div>
       </div>
       {line.blurb ? (
-        <input
-          className={styles.input}
-          value={line.blurb}
-          onChange={(e) => onChange({ ...line, blurb: e.target.value })}
-          placeholder="Blurb (optional)"
-          style={{ marginTop: 8 }}
-        />
+        <div style={{ marginTop: 8 }}>
+          <textarea
+            className={styles.textarea}
+            value={line.blurb}
+            onChange={(e) => onChange({ ...line, blurb: e.target.value })}
+            placeholder="Description"
+          />
+        </div>
       ) : (
         <button
           type="button"
           className={styles.buttonGhost}
-          onClick={() => onChange({ ...line, blurb: "" })}
+          onClick={() => onChange({ ...line, blurb: " " })}
           style={{ marginTop: 8 }}
         >
-          + Add blurb
+          + Add Description
         </button>
       )}
       <div className={styles.pricingOptions}>
@@ -59,6 +60,17 @@ export default function LineItemEditor({ line, onChange, onDelete, onAddOption, 
           />
         ))}
       </div>
+      {onSave && (
+        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            className={styles.buttonPrimary}
+            onClick={onSave}
+          >
+            Save
+          </button>
+        </div>
+      )}
     </div>
   );
 }

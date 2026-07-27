@@ -5,18 +5,29 @@ import { formatInr } from "../../lib/format.js";
 import ProposalSummaryPanel from "../../components/ProposalSummaryPanel.jsx";
 import ServiceWorkspace from "./ServiceWorkspace.jsx";
 
-const computeDigitalMarketingState = (storedSelection, fixed, ala, ph) => {
+const computeDigitalMarketingState = (storedSelection, fixed, ala, ph, customSections) => {
   const lines = storedSelection?.lines || [];
   if (lines.length === 0) {
-    return { mode: null, withContent: true, alaQty: {}, metaCount: 0 };
+    return { mode: null, withContent: true, alaQty: {}, metaCount: 0, customSelection: {} };
   }
+
+  const nextCustomSelection = {};
+  for (const line of lines) {
+    if (line.mode === "custom-section") {
+      nextCustomSelection[line.itemId] = true;
+    }
+  }
+
+  let nextMode = null;
   for (const line of lines) {
     if (line.mode === "page" || (ph && line.label === ph.name)) {
-      return { mode: "page", withContent: true, alaQty: {}, metaCount: 0 };
+      nextMode = "page";
+      break;
     }
     const matchedPlan = (fixed || []).find((p) => p.id === line.mode || p.id === line.planId || p.name === line.label);
     if (matchedPlan) {
-      return { mode: matchedPlan.id, withContent: true, alaQty: {}, metaCount: 0 };
+      nextMode = matchedPlan.id;
+      break;
     }
   }
   const nextAlaQty = {};
@@ -51,7 +62,8 @@ const computeDigitalMarketingState = (storedSelection, fixed, ala, ph) => {
       }
     }
   }
-  return { mode: "custom", withContent: nextWithContent, alaQty: nextAlaQty, metaCount: nextMetaCount };
+  if (!nextMode && Object.keys(nextAlaQty).length > 0) nextMode = "custom";
+  return { mode: nextMode, withContent: nextWithContent, alaQty: nextAlaQty, metaCount: nextMetaCount, customSelection: nextCustomSelection };
 };
 
 export default function DigitalMarketingService({
@@ -68,14 +80,18 @@ export default function DigitalMarketingService({
   const fixed = d?.fixedPlans ?? [];
   const ala = d?.alaCarte ?? [];
   const ph = d?.pageHandling;
+  const customSections = d?.customSections ?? [];
+  const fixedPlansTitle = d?.fixedPlansTitle || "Main plan";
+  const alaCarteTitle = d?.alaCarteTitle || "Custom (ala carte)";
   const metaUnit = d?.metaAdUnitPrice ?? 2499;
   const storedSelection = selectedList?.find((item) => item.serviceId === service?.id);
   const didInteractRef = useRef(false);
 
-  const [mode, setMode] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph).mode);
-  const [withContent, setWithContent] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph).withContent);
-  const [alaQty, setAlaQty] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph).alaQty);
-  const [metaCount, setMetaCount] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph).metaCount);
+  const [mode, setMode] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections).mode);
+  const [withContent, setWithContent] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections).withContent);
+  const [alaQty, setAlaQty] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections).alaQty);
+  const [metaCount, setMetaCount] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections).metaCount);
+  const [customSelection, setCustomSelection] = useState(() => computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections).customSelection);
   const [agreed, setAgreed] = useState(false);
   const [step, setStep] = useState(1);
   const [clientName, setClientName] = useState("");
@@ -92,17 +108,22 @@ export default function DigitalMarketingService({
   }, [service?.id]);
 
   useEffect(() => {
-    const next = computeDigitalMarketingState(storedSelection, fixed, ala, ph);
+    const next = computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections);
     setMode((prev) => (prev === next.mode ? prev : next.mode));
     setWithContent((prev) => (prev === next.withContent ? prev : next.withContent));
     setAlaQty((prev) => (JSON.stringify(prev) === JSON.stringify(next.alaQty) ? prev : next.alaQty));
     setMetaCount((prev) => (prev === next.metaCount ? prev : next.metaCount));
-  }, [storedSelection, fixed, ala, ph]);
+    setCustomSelection((prev) => (JSON.stringify(prev) === JSON.stringify(next.customSelection) ? prev : next.customSelection));
+  }, [storedSelection, fixed, ala, ph, customSections]);
 
   const qty = (id) => Math.max(0, alaQty[id] ?? 0);
   const updateQty = (id, delta) => {
     didInteractRef.current = true;
     setAlaQty((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] ?? 0) + delta) }));
+  };
+  const toggleCustomItem = (itemId) => {
+    didInteractRef.current = true;
+    setCustomSelection((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
   };
   const plan = fixed.find((x) => x.id === mode);
 
@@ -130,8 +151,16 @@ export default function DigitalMarketingService({
         out.push({ mode: "custom", isMeta: true, count: metaCount, label: `Meta ad setup x ${metaCount}`, price: m, sub: "Custom plan" });
       }
     }
+    for (const sec of customSections) {
+      for (const item of (sec.items || [])) {
+        if (customSelection[item.id]) {
+          t += item.price;
+          out.push({ mode: "custom-section", itemId: item.id, label: item.name, price: item.price, sub: sec.title || "Custom Section" });
+        }
+      }
+    }
     return { total: t, lines: out };
-  }, [plan, mode, ph, ala, alaQty, metaCount, metaUnit, withContent]);
+  }, [plan, mode, ph, ala, alaQty, metaCount, metaUnit, withContent, customSections, customSelection]);
 
   useEffect(() => {
     if (!service || !didInteractRef.current) return;
@@ -174,15 +203,32 @@ export default function DigitalMarketingService({
       {step === 1 ? (
         <div className="space-y-4">
           <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Main plan</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{fixedPlansTitle}</p>
             <div className="flex flex-wrap gap-2">
               {fixed.map((p) => <button key={p.id} type="button" onClick={() => { didInteractRef.current = true; setMode(mode === p.id ? null : p.id); }} className={["rounded-full border px-4 py-2 text-sm font-semibold transition", mode === p.id ? "border-brand-500 bg-brand-50 text-brand-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"].join(" ")}>{p.name} — {formatInr(p.price)}</button>)}
               {ph ? <button type="button" onClick={() => { didInteractRef.current = true; setMode(mode === "page" ? null : "page"); }} className={["rounded-full border px-4 py-2 text-sm font-semibold transition", mode === "page" ? "border-brand-500 bg-brand-50 text-brand-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"].join(" ")}>{ph.name} — {formatInr(ph.price)}</button> : null}
-              <button type="button" onClick={() => { didInteractRef.current = true; setMode(mode === "custom" ? null : "custom"); }} className={["rounded-full border px-4 py-2 text-sm font-semibold transition", mode === "custom" ? "border-amber-500 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"].join(" ")}>Custom (ala carte)</button>
+              <button type="button" onClick={() => { didInteractRef.current = true; setMode(mode === "custom" ? null : "custom"); }} className={["rounded-full border px-4 py-2 text-sm font-semibold transition", mode === "custom" ? "border-amber-500 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"].join(" ")}>{alaCarteTitle}</button>
             </div>
           </div>
-          {plan ? <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-600"><p className="font-semibold text-slate-800">Plan inclusions</p><ul className="mt-2 list-inside list-disc">{(plan.includes ?? []).map((line) => <li key={line}>{line}</li>)}</ul></div> : null}
-          {mode === "custom" ? <div className="space-y-4 rounded-2xl border border-amber-200/80 bg-amber-50/30 p-4 sm:p-5"><div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold"><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(true); }} className={["rounded-md px-3 py-1.5", withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>With content</button><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(false); }} className={["rounded-md px-3 py-1.5", !withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>Without content</button></div><div className="space-y-2">{ala.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm"><span className="font-medium text-slate-800">{item.name}</span><div className="inline-flex items-center gap-2"><span className="text-sm font-bold text-slate-700">{formatInr(withContent ? item.withContent : item.withoutContent)}</span><button type="button" onClick={() => updateQty(item.id, -1)} className="h-7 w-7 rounded-md border border-slate-300">-</button><span className="w-8 text-center">{qty(item.id)}</span><button type="button" onClick={() => updateQty(item.id, 1)} className="h-7 w-7 rounded-md border border-slate-300">+</button></div></div>)}</div><div><label className="block text-sm font-semibold text-slate-800" htmlFor="meta-c">Meta ad setup count</label><input id="meta-c" type="number" min={0} inputMode="numeric" className="mt-1 w-full max-w-[12rem] rounded-lg border border-slate-200 px-3 py-2 text-sm" value={metaCount} onChange={(e) => { didInteractRef.current = true; setMetaCount(Math.max(0, Number(e.target.value) || 0)); }} /></div></div> : null}
+          {plan ? <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-600">{plan.description ? <p className="mb-3 text-slate-700">{plan.description}</p> : null}<p className="font-semibold text-slate-800">Plan inclusions</p><ul className="mt-2 list-inside list-disc">{(plan.includes ?? []).map((line) => <li key={line}>{line}</li>)}</ul></div> : null}
+          {mode === "custom" ? <div className="space-y-4 rounded-2xl border border-amber-200/80 bg-amber-50/30 p-4 sm:p-5"><div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold"><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(true); }} className={["rounded-md px-3 py-1.5", withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>With content</button><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(false); }} className={["rounded-md px-3 py-1.5", !withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>Without content</button></div><div className="space-y-2">{ala.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm"><div className="flex flex-col"><span className="font-medium text-slate-800">{item.name}</span>{item.description ? <span className="text-xs text-slate-500 mt-0.5">{item.description}</span> : null}</div><div className="inline-flex items-center gap-2"><span className="text-sm font-bold text-slate-700">{formatInr(withContent ? item.withContent : item.withoutContent)}</span><button type="button" onClick={() => updateQty(item.id, -1)} className="h-7 w-7 rounded-md border border-slate-300">-</button><span className="w-8 text-center">{qty(item.id)}</span><button type="button" onClick={() => updateQty(item.id, 1)} className="h-7 w-7 rounded-md border border-slate-300">+</button></div></div>)}</div><div><label className="block text-sm font-semibold text-slate-800" htmlFor="meta-c">Meta ad setup count</label><input id="meta-c" type="number" min={0} inputMode="numeric" className="mt-1 w-full max-w-[12rem] rounded-lg border border-slate-200 px-3 py-2 text-sm" value={metaCount} onChange={(e) => { didInteractRef.current = true; setMetaCount(Math.max(0, Number(e.target.value) || 0)); }} /></div></div> : null}
+          
+          {customSections.map((sec) => (
+            <div key={sec.id} className="space-y-2 mt-6">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{sec.title}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {(sec.items || []).map(item => (
+                  <button key={item.id} type="button" onClick={() => toggleCustomItem(item.id)} className={["text-left rounded-xl border p-4 text-sm transition flex flex-col gap-1", customSelection[item.id] ? "border-brand-500 bg-brand-50" : "border-slate-200 bg-white hover:border-slate-300"].join(" ")}>
+                    <div className="flex justify-between items-center font-semibold w-full">
+                      <span className={customSelection[item.id] ? "text-brand-900" : "text-slate-700"}>{item.name}</span>
+                      <span className={customSelection[item.id] ? "text-brand-700" : "text-slate-600"}>{formatInr(item.price)}</span>
+                    </div>
+                    {item.description ? <span className="text-slate-500 text-xs">{item.description}</span> : null}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       ) : null}
       {step === 2 ? <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">{activeLines.length === 0 ? <p className="text-sm text-slate-500">No selection yet.</p> : <><ul className="space-y-2 text-sm text-slate-700">{activeLines.map((x, i) => <li key={i} className="flex justify-between gap-2 border-b border-slate-100 pb-2"><span>{x.label}</span><span>{formatInr(x.price)}</span></li>)}</ul><div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-3"><p className="text-sm font-semibold text-brand-900">Need another service?</p><div className="mt-2 flex flex-wrap gap-2"><button type="button" onClick={() => onMultiDecision?.("yes", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal })} className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-100">Yes, add more</button><button type="button" onClick={() => onMultiDecision?.("no", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal })} className="btn-cta" style={{ flex: "0 0 auto", minHeight: "2.25rem", fontSize: "0.8125rem", padding: "0.4rem 0.75rem" }}>No, continue</button></div></div></>}</div> : null}

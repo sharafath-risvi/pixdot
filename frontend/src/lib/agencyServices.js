@@ -38,11 +38,16 @@ export function serviceLabel(service) {
 export function filterToAgencyServices(services) {
   if (!Array.isArray(services)) return [];
   const byId = new Map(services.map((s) => [s.id, s]));
-  return AGENCY_SERVICES.map(({ id, name }) => {
+  const predefined = AGENCY_SERVICES.map(({ id, name }) => {
     const entry = byId.get(id);
     if (!entry) return null;
     return { ...entry, name };
   }).filter(Boolean);
+  
+  const predefinedIds = new Set(AGENCY_SERVICES.map(s => s.id));
+  const custom = services.filter(s => !predefinedIds.has(s.id));
+  
+  return [...predefined, ...custom];
 }
 
 function getServiceDefaultPrice(service) {

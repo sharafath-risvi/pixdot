@@ -12,13 +12,18 @@ const getAllStaff = async (req, res, next) => {
     const staffList = await Staff.find().sort({ createdAt: -1 });
 
     const userIds = staffList.map((s) => s.userId);
-    const users = await User.find({ _id: { $in: userIds } }).select("username _id");
+    const users = await User.find({ _id: { $in: userIds } }).select("username plainPassword _id");
     const usernameMap = {};
-    users.forEach((u) => { usernameMap[u._id.toString()] = u.username; });
+    const passwordMap = {};
+    users.forEach((u) => { 
+      usernameMap[u._id.toString()] = u.username; 
+      passwordMap[u._id.toString()] = u.plainPassword;
+    });
 
     const result = staffList.map((s) => ({
       ...s.toObject(),
       username: usernameMap[s.userId?.toString()] ?? "",
+      password: passwordMap[s.userId?.toString()] ?? "",
     }));
 
     return res.status(200).json({ success: true, data: result });

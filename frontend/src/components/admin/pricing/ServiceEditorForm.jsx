@@ -7,17 +7,59 @@ import AddOptionModal from "./AddOptionModal.jsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal.jsx";
 import { safeNumber } from "../../../lib/format.js";
 
+function singularize(str) {
+  if (!str) return "Item";
+  const s = str.trim();
+  if (s.toLowerCase().endsWith("plans")) return s.slice(0, -1);
+  if (s.toLowerCase().endsWith("packages")) return s.slice(0, -1);
+  if (s.toLowerCase().endsWith("s") && !s.toLowerCase().endsWith("ss")) return s.slice(0, -1);
+  return s;
+}
+
+function EditableSectionHeading({ title, onSave, onDelete, onSaveSection }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(title);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', marginTop: '2rem' }}>
+      {editing ? (
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
+          <input className={styles.input} value={val} onChange={e => setVal(e.target.value)} style={{ flex: 1, maxWidth: '300px' }} />
+          <button type="button" className={styles.buttonPrimary} onClick={() => { onSave(val); setEditing(false); }}>Save</button>
+          <button type="button" className={styles.buttonGhost} onClick={() => { setVal(title); setEditing(false); }}>Cancel</button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <h4 className={styles.pricingSectionTitle} style={{ margin: 0, marginTop: 0 }}>{title}</h4>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button type="button" className={styles.buttonGhost} style={{ padding: '4px 12px', fontSize: '13px' }} onClick={() => setEditing(true)}>Edit</button>
+            {onDelete && <button type="button" className={styles.buttonDanger} style={{ padding: '4px 12px', fontSize: '13px' }} onClick={onDelete}>Delete</button>}
+            <button type="button" className={styles.buttonPrimary} style={{ padding: '4px 12px', fontSize: '13px' }} onClick={onSaveSection}>Save Section</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
   const d = service?.detail || {};
   const fixedPlans = d.fixedPlans ?? [];
   const alaCarte = d.alaCarte ?? [];
+  const customSections = d.customSections ?? [];
   const pageHandling = d.pageHandling ?? null;
+
+  const fixedPlansTitle = d.fixedPlansTitle ?? "Fixed Plans";
+  const alaCarteTitle = d.alaCarteTitle ?? "A-la-carte";
 
   return (
     <div className={styles.pricingBlock}>
-      <div className={styles.pricingRow}>
-        <h4 className={styles.pricingH4}>Fixed Plans</h4>
-      </div>
+      <EditableSectionHeading 
+        title={fixedPlansTitle} 
+        onSave={(val) => onPatchService(svc => ({ ...svc, detail: { ...svc.detail, fixedPlansTitle: val } }), true)}
+        onDelete={() => onConfirmDelete({ type: "fixedPlansSection", name: fixedPlansTitle })}
+        onSaveSection={() => onPatchService(svc => svc, true)}
+      />
       <div className={styles.pricingGrid2}>
         {fixedPlans.map((p) => (
           <div key={p.id} className={styles.pricingMiniCard}>
@@ -64,6 +106,31 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
                 }
               />
             </div>
+            <textarea
+              className={styles.textarea}
+              style={{ marginTop: "0.5rem" }}
+              value={p.description ?? ""}
+              onChange={(e) =>
+                onPatchService((svc) => ({
+                  ...svc,
+                  detail: {
+                    ...svc.detail,
+                    fixedPlans: (svc.detail.fixedPlans ?? []).map((x) =>
+                      x.id === p.id ? { ...x, description: e.target.value } : x,
+                    ),
+                  },
+                }))
+              }
+              placeholder="Description"
+            />
+            <button
+              type="button"
+              className={styles.buttonPrimary}
+              style={{ marginTop: "0.5rem", width: "fit-content" }}
+              onClick={() => onPatchService(svc => svc, true)}
+            >
+              Save
+            </button>
           </div>
         ))}
       </div>
@@ -80,14 +147,17 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
           }), true)
         }
       >
-        + Add Plan
+        + Add {singularize(fixedPlansTitle)}
       </button>
 
       <div className={styles.pricingDivider} />
 
-      <div className={styles.pricingRow}>
-        <h4 className={styles.pricingH4}>A-la-carte</h4>
-      </div>
+      <EditableSectionHeading 
+        title={alaCarteTitle} 
+        onSave={(val) => onPatchService(svc => ({ ...svc, detail: { ...svc.detail, alaCarteTitle: val } }), true)}
+        onDelete={() => onConfirmDelete({ type: "alaCarteSection", name: alaCarteTitle })}
+        onSaveSection={() => onPatchService(svc => svc, true)}
+      />
       <div className={styles.pricingGrid2}>
         {alaCarte.map((a) => (
           <div key={a.id} className={styles.pricingMiniCard}>
@@ -156,6 +226,31 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
                 <span className={styles.muted}>₹</span>
               </div>
             </div>
+            <textarea
+              className={styles.textarea}
+              style={{ marginTop: "0.5rem" }}
+              value={a.description ?? ""}
+              onChange={(e) =>
+                onPatchService((svc) => ({
+                  ...svc,
+                  detail: {
+                    ...svc.detail,
+                    alaCarte: (svc.detail.alaCarte ?? []).map((x) =>
+                      x.id === a.id ? { ...x, description: e.target.value } : x,
+                    ),
+                  },
+                }))
+              }
+              placeholder="Description"
+            />
+            <button
+              type="button"
+              className={styles.buttonPrimary}
+              style={{ marginTop: "0.5rem", width: "fit-content" }}
+              onClick={() => onPatchService(svc => svc, true)}
+            >
+              Save
+            </button>
           </div>
         ))}
       </div>
@@ -172,7 +267,163 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
           }), true)
         }
       >
-        + Add A-la-carte item
+        + Add {singularize(alaCarteTitle)}
+      </button>
+
+      <div className={styles.pricingDivider} />
+
+      {customSections.map((sec) => (
+        <div key={sec.id} style={{ marginBottom: "2rem" }}>
+          <EditableSectionHeading 
+            title={sec.title || "Custom Section"} 
+            onSave={(val) => onPatchService(svc => ({ ...svc, detail: { ...svc.detail, customSections: (svc.detail.customSections??[]).map(s => s.id === sec.id ? { ...s, title: val } : s) } }), true)}
+            onDelete={() => onConfirmDelete({ type: "customSection", id: sec.id, name: sec.title })}
+            onSaveSection={() => onPatchService(svc => svc, true)}
+          />
+          <div className={styles.pricingGrid2}>
+            {(sec.items ?? []).map((p) => (
+              <div key={p.id} className={styles.pricingMiniCard}>
+                <div className={styles.row}>
+                  <input
+                    className={styles.input}
+                    value={p.name}
+                    onChange={(e) =>
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          customSections: (svc.detail.customSections ?? []).map((s) =>
+                            s.id === sec.id
+                              ? {
+                                  ...s,
+                                  items: (s.items ?? []).map((x) =>
+                                    x.id === p.id ? { ...x, name: e.target.value } : x,
+                                  ),
+                                }
+                              : s,
+                          ),
+                        },
+                      }))
+                    }
+                    placeholder="Item Name"
+                  />
+                  <button
+                    type="button"
+                    className={styles.buttonDanger}
+                    onClick={() => onConfirmDelete({ type: "customItem", sectionId: sec.id, id: p.id, name: p.name || "Item" })}
+                  >
+                    Delete
+                  </button>
+                </div>
+                <div className={styles.inlineField}>
+                  <span className={styles.muted} style={{ alignSelf: "center" }}>
+                    Price
+                  </span>
+                  <input
+                    className={styles.input}
+                    inputMode="numeric"
+                    value={p.price}
+                    onChange={(e) =>
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          customSections: (svc.detail.customSections ?? []).map((s) =>
+                            s.id === sec.id
+                              ? {
+                                  ...s,
+                                  items: (s.items ?? []).map((x) =>
+                                    x.id === p.id ? { ...x, price: safeNumber(e.target.value) } : x,
+                                  ),
+                                }
+                              : s,
+                          ),
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <textarea
+                  className={styles.textarea}
+                  style={{ marginTop: "0.5rem" }}
+                  value={p.description ?? ""}
+                  onChange={(e) =>
+                    onPatchService((svc) => ({
+                      ...svc,
+                      detail: {
+                        ...svc.detail,
+                        customSections: (svc.detail.customSections ?? []).map((s) =>
+                          s.id === sec.id
+                            ? {
+                                ...s,
+                                items: (s.items ?? []).map((x) =>
+                                  x.id === p.id ? { ...x, description: e.target.value } : x,
+                                ),
+                              }
+                            : s,
+                        ),
+                      },
+                    }))
+                  }
+                  placeholder="Description"
+                />
+                <button
+                  type="button"
+                  className={styles.buttonPrimary}
+                  style={{ marginTop: "0.5rem", width: "fit-content" }}
+                  onClick={() => onPatchService(svc => svc, true)}
+                >
+                  Save
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className={styles.buttonGhost}
+            onClick={() =>
+              onPatchService((svc) => ({
+                ...svc,
+                detail: {
+                  ...svc.detail,
+                  customSections: (svc.detail.customSections ?? []).map((s) =>
+                    s.id === sec.id
+                      ? {
+                          ...s,
+                          items: [
+                            ...(s.items ?? []),
+                            { id: `citem-${Date.now()}`, name: "New Item", price: 0, description: "" },
+                          ],
+                        }
+                      : s,
+                  ),
+                },
+              }), true)
+            }
+          >
+            + Add {singularize(sec.title || "Item")}
+          </button>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        className={styles.buttonSecondary}
+        style={{ width: "100%", marginBottom: "2rem" }}
+        onClick={() =>
+          onPatchService((svc) => ({
+            ...svc,
+            detail: {
+              ...svc.detail,
+              customSections: [
+                ...(svc.detail.customSections ?? []),
+                { id: `csec-${Date.now()}`, title: "New Section", items: [] },
+              ],
+            },
+          }), true)
+        }
+      >
+        + Add New Section
       </button>
 
       <div className={styles.pricingDivider} />
@@ -295,6 +546,33 @@ export default function ServiceEditorForm({ service, setServices, onDeleted, dig
         ...svc,
         detail: { ...svc.detail, alaCarte: (svc.detail.alaCarte ?? []).filter((x) => x.id !== deleteTarget.id) },
       }), true);
+    } else if (deleteTarget.type === "fixedPlansSection") {
+      await patchThisService((svc) => ({
+        ...svc,
+        detail: { ...svc.detail, fixedPlans: [] },
+      }), true);
+    } else if (deleteTarget.type === "alaCarteSection") {
+      await patchThisService((svc) => ({
+        ...svc,
+        detail: { ...svc.detail, alaCarte: [] },
+      }), true);
+    } else if (deleteTarget.type === "customSection") {
+      await patchThisService((svc) => ({
+        ...svc,
+        detail: { ...svc.detail, customSections: (svc.detail.customSections ?? []).filter((x) => x.id !== deleteTarget.id) },
+      }), true);
+    } else if (deleteTarget.type === "customItem") {
+      await patchThisService((svc) => ({
+        ...svc,
+        detail: {
+          ...svc.detail,
+          customSections: (svc.detail.customSections ?? []).map((sec) =>
+            sec.id === deleteTarget.sectionId
+              ? { ...sec, items: (sec.items ?? []).filter((x) => x.id !== deleteTarget.id) }
+              : sec
+          ),
+        },
+      }), true);
     }
     setDeleteTarget(null);
   };
@@ -359,6 +637,7 @@ export default function ServiceEditorForm({ service, setServices, onDeleted, dig
                   },
                 }))
               }
+              onSave={() => patchThisService((svc) => svc, true)}
               onDelete={() => setDeleteTarget({ type: "lineItem", id: line.id, name: line.name })}
               onAddOption={() => setAddOptForLine(line)}
             />

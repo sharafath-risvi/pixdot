@@ -39,11 +39,57 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
       setLogoStatus("idle");
       return;
     }
-    setLogoStatus("loading");
-    const img = new window.Image();
-    img.onload = () => setLogoStatus("success");
-    img.onerror = () => setLogoStatus("error");
-    img.src = url;
+
+    const validateImage = async (testUrl) => {
+      try {
+        const parsed = new URL(testUrl);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          setLogoStatus("error");
+          return;
+        }
+      } catch {
+        setLogoStatus("error");
+        return;
+      }
+
+      setLogoStatus("loading");
+
+      // 1. Check using Image object
+      const isLoadable = await new Promise((resolve) => {
+        const img = new window.Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = testUrl;
+      });
+
+      if (isLoadable) {
+        setLogoStatus("success");
+        return;
+      }
+
+      // 2. Try fetching HEAD to verify Content-Type
+      try {
+        const res = await fetch(testUrl, { method: "HEAD" });
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.startsWith("image/")) {
+          setLogoStatus("success");
+          return;
+        }
+      } catch (err) {
+        // Fetch failed (likely CORS)
+      }
+
+      // 3. Fallback to known extensions
+      if (/\.(jpeg|jpg|png|webp|gif|svg|avif)(\?.*)?$/i.test(testUrl)) {
+        setLogoStatus("success");
+        return;
+      }
+
+      // 4. Otherwise, it is invalid or not an image
+      setLogoStatus("error");
+    };
+
+    validateImage(url);
   }, [form.logo]);
 
   const handleChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -98,7 +144,7 @@ export default function ClientEditForm({ client, onSave, onCancel }) {
               )}
               {logoStatus === "error" && (
                 <p style={{ margin: 0, color: '#b91c1c', fontSize: '13px', fontWeight: '600' }}>
-                  Please enter a valid direct image URL (.jpg, .jpeg, .png, .webp, etc.).
+                  Please enter a valid direct image URL (must point directly to the image).
                 </p>
               )}
             </div>

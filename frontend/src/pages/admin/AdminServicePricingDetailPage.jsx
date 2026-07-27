@@ -44,8 +44,13 @@ export default function AdminServicePricingDetailPage() {
 
   const isDigital = service?.detail?.type === "digital_marketing";
   const lineItems = service?.detail?.lineItems ?? [];
+  
   const fixedPlans = service?.detail?.fixedPlans ?? [];
   const alaCarte = service?.detail?.alaCarte ?? [];
+  const customSections = service?.detail?.customSections ?? [];
+
+  const fixedPlansTitle = service?.detail?.fixedPlansTitle || "Fixed Plans";
+  const alaCarteTitle = service?.detail?.alaCarteTitle || "A-la-carte";
 
   const addLineItem = () => {
     const name = addName.trim();
@@ -96,47 +101,68 @@ export default function AdminServicePricingDetailPage() {
         <div className={styles.pricingPanelBody}>
           {isDigital ? (
             <>
-              <h4 className={styles.pricingSectionTitle}>Fixed plans</h4>
+              {/* Fixed Plans Section */}
+              <h4 className={styles.pricingSectionTitle} style={{ marginTop: 0 }}>{fixedPlansTitle}</h4>
               <div className={styles.pricingItemGrid}>
                 {fixedPlans.map((plan) => (
-                  <Link
-                    key={plan.id}
-                    to={`${pricingServicePath(service.id)}/digital`}
-                    className={styles.pricingItemCard}
-                  >
+                  <Link key={plan.id} to={`${pricingServicePath(service.id)}/digital`} className={styles.pricingItemCard}>
                     <span className={styles.pricingItemCardTitle}>{plan.name}</span>
                     <span className={styles.pricingItemCardMeta}>{formatPrice(plan.price)}</span>
-                    <span className={styles.pricingItemCardAction}>
-                      Edit plan <FaArrowRight aria-hidden />
-                    </span>
+                    {plan.description ? <p className={styles.pricingItemCardDesc}>{plan.description}</p> : null}
+                    <span className={styles.pricingItemCardAction}>Edit plan <FaArrowRight aria-hidden /></span>
                   </Link>
                 ))}
               </div>
-              <h4 className={styles.pricingSectionTitle}>A-la-carte</h4>
+
+              {/* A-la-carte Section */}
+              <h4 className={styles.pricingSectionTitle}>{alaCarteTitle}</h4>
               <div className={styles.pricingItemGrid}>
                 {alaCarte.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={`${pricingServicePath(service.id)}/digital`}
-                    className={styles.pricingItemCard}
-                  >
+                  <Link key={item.id} to={`${pricingServicePath(service.id)}/digital`} className={styles.pricingItemCard}>
                     <span className={styles.pricingItemCardTitle}>{item.name}</span>
-                    <span className={styles.pricingItemCardMeta}>
-                      With: {formatPrice(item.withContent)} · Without: {formatPrice(item.withoutContent)}
-                    </span>
-                    <span className={styles.pricingItemCardAction}>
-                      Edit item <FaArrowRight aria-hidden />
-                    </span>
+                    <span className={styles.pricingItemCardMeta}>With: {formatPrice(item.withContent)} · Without: {formatPrice(item.withoutContent)}</span>
+                    {item.description ? <p className={styles.pricingItemCardDesc}>{item.description}</p> : null}
+                    <span className={styles.pricingItemCardAction}>Edit item <FaArrowRight aria-hidden /></span>
                   </Link>
                 ))}
               </div>
-              <Link
-                to={`${pricingServicePath(service.id)}/digital`}
-                className={styles.pricingFullEditLink}
-              >
-                Open full digital marketing editor
-                <FaArrowRight aria-hidden />
-              </Link>
+
+              {/* Custom Sections */}
+              {customSections.map(sec => (
+                <div key={sec.id}>
+                  <h4 className={styles.pricingSectionTitle}>{sec.title || "Custom Section"}</h4>
+                  <div className={styles.pricingItemGrid}>
+                    {(sec.items || []).map(item => (
+                      <Link key={item.id} to={`${pricingServicePath(service.id)}/digital`} className={styles.pricingItemCard}>
+                        <span className={styles.pricingItemCardTitle}>{item.name}</span>
+                        <span className={styles.pricingItemCardMeta}>{formatPrice(item.price)}</span>
+                        {item.description ? <p className={styles.pricingItemCardDesc}>{item.description}</p> : null}
+                        <span className={styles.pricingItemCardAction}>Edit item <FaArrowRight aria-hidden /></span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
+                <Link 
+                  to={`${pricingServicePath(service.id)}/digital`} 
+                  className={styles.buttonPrimary}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.85rem 1.5rem',
+                    fontSize: '1rem',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                >
+                  <FaPen aria-hidden />
+                  Manage Digital Marketing
+                </Link>
+              </div>
             </>
           ) : (
             <>
