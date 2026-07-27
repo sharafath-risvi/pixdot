@@ -77,10 +77,10 @@ export default function DigitalMarketingService({
   const { services } = useServicePricing();
   const service = services.find((s) => s.id === "digital-marketing");
   const d = service?.detail;
-  const fixed = d?.fixedPlans ?? [];
-  const ala = d?.alaCarte ?? [];
+  const fixed = useMemo(() => d?.fixedPlans ?? [], [d?.fixedPlans]);
+  const ala = useMemo(() => d?.alaCarte ?? [], [d?.alaCarte]);
   const ph = d?.pageHandling;
-  const customSections = d?.customSections ?? [];
+  const customSections = useMemo(() => d?.customSections ?? [], [d?.customSections]);
   const fixedPlansTitle = d?.fixedPlansTitle || "Main plan";
   const alaCarteTitle = d?.alaCarteTitle || "Custom (ala carte)";
   const metaUnit = d?.metaAdUnitPrice ?? 2499;
