@@ -123,6 +123,68 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
               }
               placeholder="Description"
             />
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+              <p className={styles.muted} style={{ fontSize: 12, margin: 0 }}>What's Included</p>
+              {(p.bulletPoints ?? []).map((bp, i) => (
+                <div key={i} style={{ display: "flex", gap: 8 }}>
+                  <input
+                    className={styles.input}
+                    value={bp}
+                    onChange={(e) => {
+                      const next = [...(p.bulletPoints ?? [])];
+                      next[i] = e.target.value;
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          fixedPlans: (svc.detail.fixedPlans ?? []).map((x) =>
+                            x.id === p.id ? { ...x, bulletPoints: next } : x,
+                          ),
+                        },
+                      }))
+                    }}
+                    placeholder="Bullet point"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className={styles.buttonDanger}
+                    onClick={() => {
+                      const next = (p.bulletPoints ?? []).filter((_, idx) => idx !== i);
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          fixedPlans: (svc.detail.fixedPlans ?? []).map((x) =>
+                            x.id === p.id ? { ...x, bulletPoints: next } : x,
+                          ),
+                        },
+                      }))
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                className={styles.buttonGhost}
+                onClick={() => {
+                  onPatchService((svc) => ({
+                    ...svc,
+                    detail: {
+                      ...svc.detail,
+                      fixedPlans: (svc.detail.fixedPlans ?? []).map((x) =>
+                        x.id === p.id ? { ...x, bulletPoints: [...(x.bulletPoints ?? []), ""] } : x,
+                      ),
+                    },
+                  }))
+                }}
+                style={{ width: "fit-content", fontSize: 13, padding: "6px 12px" }}
+              >
+                + Add Bullet Point
+              </button>
+            </div>
             <button
               type="button"
               className={styles.buttonPrimary}
@@ -243,6 +305,68 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
               }
               placeholder="Description"
             />
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+              <p className={styles.muted} style={{ fontSize: 12, margin: 0 }}>What's Included</p>
+              {(a.bulletPoints ?? []).map((bp, i) => (
+                <div key={i} style={{ display: "flex", gap: 8 }}>
+                  <input
+                    className={styles.input}
+                    value={bp}
+                    onChange={(e) => {
+                      const next = [...(a.bulletPoints ?? [])];
+                      next[i] = e.target.value;
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          alaCarte: (svc.detail.alaCarte ?? []).map((x) =>
+                            x.id === a.id ? { ...x, bulletPoints: next } : x,
+                          ),
+                        },
+                      }))
+                    }}
+                    placeholder="Bullet point"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className={styles.buttonDanger}
+                    onClick={() => {
+                      const next = (a.bulletPoints ?? []).filter((_, idx) => idx !== i);
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          alaCarte: (svc.detail.alaCarte ?? []).map((x) =>
+                            x.id === a.id ? { ...x, bulletPoints: next } : x,
+                          ),
+                        },
+                      }))
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                className={styles.buttonGhost}
+                onClick={() => {
+                  onPatchService((svc) => ({
+                    ...svc,
+                    detail: {
+                      ...svc.detail,
+                      alaCarte: (svc.detail.alaCarte ?? []).map((x) =>
+                        x.id === a.id ? { ...x, bulletPoints: [...(x.bulletPoints ?? []), ""] } : x,
+                      ),
+                    },
+                  }))
+                }}
+                style={{ width: "fit-content", fontSize: 13, padding: "6px 12px" }}
+              >
+                + Add Bullet Point
+              </button>
+            </div>
             <button
               type="button"
               className={styles.buttonPrimary}
@@ -367,6 +491,89 @@ function DigitalMarketingEditor({ service, onPatchService, onConfirmDelete }) {
                   }
                   placeholder="Description"
                 />
+                <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <p className={styles.muted} style={{ fontSize: 12, margin: 0 }}>What's Included</p>
+                  {(p.bulletPoints ?? []).map((bp, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8 }}>
+                      <input
+                        className={styles.input}
+                        value={bp}
+                        onChange={(e) => {
+                          const next = [...(p.bulletPoints ?? [])];
+                          next[i] = e.target.value;
+                          onPatchService((svc) => ({
+                            ...svc,
+                            detail: {
+                              ...svc.detail,
+                              customSections: (svc.detail.customSections ?? []).map((s) =>
+                                s.id === sec.id
+                                  ? {
+                                      ...s,
+                                      items: (s.items ?? []).map((x) =>
+                                        x.id === p.id ? { ...x, bulletPoints: next } : x,
+                                      ),
+                                    }
+                                  : s,
+                              ),
+                            },
+                          }))
+                        }}
+                        placeholder="Bullet point"
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.buttonDanger}
+                        onClick={() => {
+                          const next = (p.bulletPoints ?? []).filter((_, idx) => idx !== i);
+                          onPatchService((svc) => ({
+                            ...svc,
+                            detail: {
+                              ...svc.detail,
+                              customSections: (svc.detail.customSections ?? []).map((s) =>
+                                s.id === sec.id
+                                  ? {
+                                      ...s,
+                                      items: (s.items ?? []).map((x) =>
+                                        x.id === p.id ? { ...x, bulletPoints: next } : x,
+                                      ),
+                                    }
+                                  : s,
+                              ),
+                            },
+                          }))
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className={styles.buttonGhost}
+                    onClick={() => {
+                      onPatchService((svc) => ({
+                        ...svc,
+                        detail: {
+                          ...svc.detail,
+                          customSections: (svc.detail.customSections ?? []).map((s) =>
+                            s.id === sec.id
+                              ? {
+                                  ...s,
+                                  items: (s.items ?? []).map((x) =>
+                                    x.id === p.id ? { ...x, bulletPoints: [...(x.bulletPoints ?? []), ""] } : x,
+                                  ),
+                                }
+                              : s,
+                          ),
+                        },
+                      }))
+                    }}
+                    style={{ width: "fit-content", fontSize: 13, padding: "6px 12px" }}
+                  >
+                    + Add Bullet Point
+                  </button>
+                </div>
                 <button
                   type="button"
                   className={styles.buttonPrimary}

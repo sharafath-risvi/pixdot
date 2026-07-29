@@ -109,8 +109,17 @@ export default function DigitalMarketingService({
 
   useEffect(() => {
     const next = computeDigitalMarketingState(storedSelection, fixed, ala, ph, customSections);
-    setMode((prev) => (prev === next.mode ? prev : next.mode));
-    setWithContent((prev) => (prev === next.withContent ? prev : next.withContent));
+    
+    const hasLines = (storedSelection?.lines?.length || 0) > 0;
+
+    setMode((prev) => {
+      if (!hasLines && prev !== null) return prev;
+      return prev === next.mode ? prev : next.mode;
+    });
+    setWithContent((prev) => {
+      if (!hasLines) return prev;
+      return prev === next.withContent ? prev : next.withContent;
+    });
     setAlaQty((prev) => (JSON.stringify(prev) === JSON.stringify(next.alaQty) ? prev : next.alaQty));
     setMetaCount((prev) => (prev === next.metaCount ? prev : next.metaCount));
     setCustomSelection((prev) => (JSON.stringify(prev) === JSON.stringify(next.customSelection) ? prev : next.customSelection));
@@ -210,8 +219,20 @@ export default function DigitalMarketingService({
               <button type="button" onClick={() => { didInteractRef.current = true; setMode(mode === "custom" ? null : "custom"); }} className={["rounded-full border px-4 py-2 text-sm font-semibold transition", mode === "custom" ? "border-amber-500 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"].join(" ")}>{alaCarteTitle}</button>
             </div>
           </div>
-          {plan ? <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-600">{plan.description ? <p className="mb-3 text-slate-700">{plan.description}</p> : null}<p className="font-semibold text-slate-800">Plan inclusions</p><ul className="mt-2 list-inside list-disc">{(plan.includes ?? []).map((line) => <li key={line}>{line}</li>)}</ul></div> : null}
-          {mode === "custom" ? <div className="space-y-4 rounded-2xl border border-amber-200/80 bg-amber-50/30 p-4 sm:p-5"><div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold"><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(true); }} className={["rounded-md px-3 py-1.5", withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>With content</button><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(false); }} className={["rounded-md px-3 py-1.5", !withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>Without content</button></div><div className="space-y-2">{ala.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm"><div className="flex flex-col"><span className="font-medium text-slate-800">{item.name}</span>{item.description ? <span className="text-xs text-slate-500 mt-0.5">{item.description}</span> : null}</div><div className="inline-flex items-center gap-2"><span className="text-sm font-bold text-slate-700">{formatInr(withContent ? item.withContent : item.withoutContent)}</span><button type="button" onClick={() => updateQty(item.id, -1)} className="h-7 w-7 rounded-md border border-slate-300">-</button><span className="w-8 text-center">{qty(item.id)}</span><button type="button" onClick={() => updateQty(item.id, 1)} className="h-7 w-7 rounded-md border border-slate-300">+</button></div></div>)}</div><div><label className="block text-sm font-semibold text-slate-800" htmlFor="meta-c">Meta ad setup count</label><input id="meta-c" type="number" min={0} inputMode="numeric" className="mt-1 w-full max-w-[12rem] rounded-lg border border-slate-200 px-3 py-2 text-sm" value={metaCount} onChange={(e) => { didInteractRef.current = true; setMetaCount(Math.max(0, Number(e.target.value) || 0)); }} /></div></div> : null}
+          {plan && (plan.description || (plan.bulletPoints && plan.bulletPoints.length > 0)) ? (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 sm:p-5">
+              {plan.description ? <p className="text-[13px] leading-relaxed text-slate-600">{plan.description}</p> : null}
+              {plan.bulletPoints && plan.bulletPoints.length > 0 ? (
+                <div className={plan.description ? "mt-4" : ""}>
+                  <p className="text-sm font-bold text-slate-800">What's Included</p>
+                  <ul className="mt-2 ml-4 list-outside list-disc space-y-1.5 text-[13px] leading-relaxed text-slate-600">
+                    {plan.bulletPoints.map((bp, i) => <li key={i} className="pl-1">{bp}</li>)}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          {mode === "custom" ? <div className="space-y-4 rounded-2xl border border-amber-200/80 bg-amber-50/30 p-4 sm:p-5"><div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold"><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(true); }} className={["rounded-md px-3 py-1.5", withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>With content</button><button type="button" onClick={() => { didInteractRef.current = true; setWithContent(false); }} className={["rounded-md px-3 py-1.5", !withContent ? "bg-brand-600 text-white" : "text-slate-600"].join(" ")}>Without content</button></div><div className="space-y-2">{ala.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm"><div className="flex flex-col"><span className="font-medium text-slate-800">{item.name}</span>{item.description || (item.bulletPoints && item.bulletPoints.length > 0) ? <div className="mt-1.5 flex flex-col">{item.description ? <p className="text-[13px] leading-relaxed text-slate-500">{item.description}</p> : null}{item.bulletPoints && item.bulletPoints.length > 0 ? <div className={item.description ? "mt-3" : ""}><p className="text-sm font-bold text-slate-800">What's Included</p><ul className="mt-2 ml-4 list-outside list-disc space-y-1.5 text-[13px] leading-relaxed text-slate-600">{item.bulletPoints.map((bp, i) => <li key={i} className="pl-1">{bp}</li>)}</ul></div> : null}</div> : null}</div><div className="inline-flex items-center gap-2"><span className="text-sm font-bold text-slate-700">{formatInr(withContent ? item.withContent : item.withoutContent)}</span><button type="button" onClick={() => updateQty(item.id, -1)} className="h-7 w-7 rounded-md border border-slate-300">-</button><span className="w-8 text-center">{qty(item.id)}</span><button type="button" onClick={() => updateQty(item.id, 1)} className="h-7 w-7 rounded-md border border-slate-300">+</button></div></div>)}</div><div><label className="block text-sm font-semibold text-slate-800" htmlFor="meta-c">Meta ad setup count</label><input id="meta-c" type="number" min={0} inputMode="numeric" className="mt-1 w-full max-w-[12rem] rounded-lg border border-slate-200 px-3 py-2 text-sm" value={metaCount} onChange={(e) => { didInteractRef.current = true; setMetaCount(Math.max(0, Number(e.target.value) || 0)); }} /></div></div> : null}
           
           {customSections.map((sec) => (
             <div key={sec.id} className="space-y-2 mt-6">
@@ -223,7 +244,7 @@ export default function DigitalMarketingService({
                       <span className={customSelection[item.id] ? "text-brand-900" : "text-slate-700"}>{item.name}</span>
                       <span className={customSelection[item.id] ? "text-brand-700" : "text-slate-600"}>{formatInr(item.price)}</span>
                     </div>
-                    {item.description ? <span className="text-slate-500 text-xs">{item.description}</span> : null}
+                    {item.description || (item.bulletPoints && item.bulletPoints.length > 0) ? <div className="mt-1.5 text-left">{item.description ? <p className="text-[13px] leading-relaxed text-slate-500">{item.description}</p> : null}{item.bulletPoints && item.bulletPoints.length > 0 ? <div className={item.description ? "mt-3" : ""}><p className="text-sm font-bold text-slate-800">What's Included</p><ul className="mt-2 ml-4 list-outside list-disc space-y-1.5 text-[13px] leading-relaxed text-slate-600">{item.bulletPoints.map((bp, i) => <li key={i} className="pl-1">{bp}</li>)}</ul></div> : null}</div> : null}
                   </button>
                 ))}
               </div>
