@@ -15,9 +15,13 @@ const getAllClients = async (req, res, next) => {
 
     // Attach portalUsername from linked User accounts
     const userIds = clients.map((c) => c.userId);
-    const users = await User.find({ _id: { $in: userIds } }).select("username _id");
+    const users = await User.find({ _id: { $in: userIds } }).select("username plainPassword _id");
     const usernameMap = {};
-    users.forEach((u) => { usernameMap[u._id.toString()] = u.username; });
+    const passwordMap = {};
+    users.forEach((u) => { 
+      usernameMap[u._id.toString()] = u.username; 
+      passwordMap[u._id.toString()] = u.plainPassword;
+    });
 
     const allServices = await ClientService.find({ status: "Active" });
     const servicesByClient = {};
@@ -32,6 +36,7 @@ const getAllClients = async (req, res, next) => {
     const result = clients.map((c) => ({
       ...c.toObject(),
       portalUsername: usernameMap[c.userId?.toString()] ?? "",
+      password: passwordMap[c.userId?.toString()] ?? "",
       services: servicesByClient[c._id.toString()] || [],
     }));
 

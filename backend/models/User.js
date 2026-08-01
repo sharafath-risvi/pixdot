@@ -21,7 +21,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required."],
       minlength: [6, "Password must be at least 6 characters."],
-      select: false, // Never returned in queries by default
+    },
+    plainPassword: {
+      type: String,
+      select: false,
     },
   },
   { timestamps: true }
@@ -30,6 +33,7 @@ const userSchema = new mongoose.Schema(
 // Hash password before saving
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
+  this.plainPassword = this.password;
   this.password = await bcrypt.hash(this.password, 12);
 });
 

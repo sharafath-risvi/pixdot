@@ -62,6 +62,7 @@ app.use("/api/notes", notesRoutes);
 app.use("/api/pricing", pricingRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/quotes", quoteRoutes);
+app.use("/api/services", clientServiceRoutes);
 
 // ─── Automated Webhook Deploy Endpoint ─────────────────────────────────────
 app.post("/api/deploy-webhook", (req, res) => {

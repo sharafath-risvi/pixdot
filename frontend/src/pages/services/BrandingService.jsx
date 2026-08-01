@@ -219,13 +219,23 @@ export default function BrandingService({
                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
                       ].join(" ")}
                     >
-                      <div>
-                        <p>{opt.label}</p>
-                        <p className="text-xs font-semibold text-slate-600">
+                      <div className="flex flex-col gap-1.5 py-0.5 pr-2">
+                        <p className="text-base font-bold text-slate-900">{opt.label}</p>
+                        <p className="text-sm font-semibold text-brand-700">
                           {formatInr(opt.price)}
                           {opt.unit ? ` · ${opt.unit}` : ""}
-                          {opt.note ? ` · ${opt.note}` : ""}
                         </p>
+                        {opt.note ? <p className="mt-1 text-[13px] leading-relaxed text-slate-500">{opt.note}</p> : null}
+                        {opt.bulletPoints && opt.bulletPoints.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-sm font-bold text-slate-800">What's Included</p>
+                            <ul className="mt-2 ml-4 list-outside list-disc space-y-1.5 text-[13px] leading-relaxed text-slate-600">
+                              {opt.bulletPoints.map((bp, i) => (
+                                <li key={i} className="pl-1">{bp}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
                       </div>
                       <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1">
                         <button

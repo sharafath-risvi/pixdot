@@ -554,6 +554,27 @@
 
 /* ——— Modal ——— */
 .staffModalBackdrop {
+  --staff-bg0: #f7f7fb;
+  --staff-bg1: #f1f2f6;
+  --staff-surface: var(--dash-surface, #ffffff);
+  --staff-surface-2: #ffffff;
+  --staff-border: var(--dash-border, #e2e2ea);
+  --staff-border-strong: var(--dash-border-strong, #d4d4de);
+  --staff-text: var(--dash-text, #0e0e14);
+  --staff-muted: var(--dash-muted, #656575);
+  --staff-muted2: var(--dash-muted-light, #8a8a9a);
+  --staff-accent: var(--dash-accent, #0a4174);
+  --staff-accent-hover: var(--dash-accent-hover, #001d39);
+  --staff-accent-soft: var(--dash-accent-soft, rgba(123, 189, 232, 0.18));
+  --staff-accent-ring: var(--dash-accent-ring, rgba(10, 65, 116, 0.18));
+  --staff-success: #4e8ea2;
+  --staff-success-soft: rgba(78, 142, 162, 0.15);
+  --staff-shadow: var(--dash-shadow, 0 4px 24px -8px rgba(14, 14, 20, 0.08));
+  --staff-shadow-lg: var(--dash-shadow-lg, 0 12px 40px -16px rgba(14, 14, 20, 0.12));
+  --staff-radius: 16px;
+  --staff-radius-sm: 12px;
+  --staff-font: var(--dash-font, "Space Grotesk", ui-sans-serif, system-ui, sans-serif);
+
   position: fixed;
   inset: 0;
   z-index: 2000;

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import styles from "../../components/admin/Admin.module.css";
-import { AGENCY_SERVICES } from "../../lib/agencyServices.js";
+import { useServicePricing } from "../../context/PricingContext.jsx";
 
 const empty = { clientId: "", serviceName: "", category: "General", description: "", status: "Active", price: 0, startDate: "", endDate: "" };
 
 export default function ServiceEditModal({ service, clients, onSave, onClose }) {
   const [form, setForm] = useState(empty);
+  const { services: pricingServices } = useServicePricing();
 
   useEffect(() => {
     if (service) {
@@ -62,7 +63,7 @@ export default function ServiceEditModal({ service, clients, onSave, onClose }) 
                 style={{ padding: "10px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", outline: "none" }}
               />
               <datalist id="service-names">
-                {AGENCY_SERVICES.map(s => <option key={s.id} value={s.name} />)}
+                {pricingServices.map(s => <option key={s.id} value={s.name || s.serviceName} />)}
               </datalist>
             </label>
             <label style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px", fontWeight: "600", color: "#334155" }}>
@@ -102,10 +103,15 @@ export default function ServiceEditModal({ service, clients, onSave, onClose }) 
             <label style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px", fontWeight: "600", color: "#334155" }}>
               Price (Rs.)
               <input
-                type="number"
-                min="0"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                type="text"
+                value={form.price === 0 && form.price !== "" ? 0 : form.price}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setForm({ ...form, price: val === "" ? "" : Number(val) });
+                }}
+                onBlur={(e) => {
+                  if (form.price === "") setForm({ ...form, price: 0 });
+                }}
                 style={{ padding: "10px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", outline: "none" }}
               />
             </label>

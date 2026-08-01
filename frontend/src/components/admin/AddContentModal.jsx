@@ -42,7 +42,7 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
   const handleSubmit = (e) => {
     e.preventDefault();
     if (status === "pending" && !reasonNote.trim()) {
-      setError("Pending status-ku reason note required.");
+      setError("Please enter a Reason Note for Pending status.");
       return;
     }
     onSubmit({

@@ -44,6 +44,43 @@ export default function OptionEditor({ option, onChange, onDelete }) {
         />
       </div>
 
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+        <p className={styles.muted} style={{ fontSize: 12, margin: 0 }}>What's Included</p>
+        {(option.bulletPoints ?? []).map((bp, i) => (
+          <div key={i} style={{ display: "flex", gap: 8 }}>
+            <input
+              className={styles.input}
+              value={bp}
+              onChange={(e) => {
+                const next = [...(option.bulletPoints ?? [])];
+                next[i] = e.target.value;
+                onChange({ ...option, bulletPoints: next });
+              }}
+              placeholder="Bullet point"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className={styles.buttonDanger}
+              onClick={() => {
+                const next = (option.bulletPoints ?? []).filter((_, idx) => idx !== i);
+                onChange({ ...option, bulletPoints: next });
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className={styles.buttonGhost}
+          onClick={() => onChange({ ...option, bulletPoints: [...(option.bulletPoints ?? []), ""] })}
+          style={{ width: "fit-content", fontSize: 13, padding: "6px 12px" }}
+        >
+          + Add Bullet Point
+        </button>
+      </div>
+
       <ConfirmDeleteModal
         open={showConfirm}
         title="Delete Option"

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import api from "../../lib/api.js";
 import { useWorkspace } from "../../context/WorkspaceContext.jsx";
 import PasswordInput from "../../components/admin/PasswordInput.jsx";
@@ -26,6 +26,17 @@ function PasswordRowActions({ onEdit, onReset }) {
 }
 
 export default function AdminSettingsPage() {
+  const [adminUser, setAdminUser] = useState(null);
+  const fetchAdminUser = useCallback(() => {
+    api.get("/api/auth/me")
+      .then((res) => setAdminUser(res.data.data))
+      .catch((err) => console.error("Failed to fetch admin user:", err));
+  }, []);
+
+  useEffect(() => {
+    fetchAdminUser();
+  }, [fetchAdminUser]);
+
   const {
     staffSalaryVisibleToSelf,
     setStaffSalaryVisibleToSelf,
@@ -33,6 +44,8 @@ export default function AdminSettingsPage() {
     updateStaffMember,
     clients,
     updateClient,
+    fetchClients,
+    fetchStaff,
   } = useWorkspace();
   const globalToast = useToast();
 
@@ -86,7 +99,7 @@ export default function AdminSettingsPage() {
             <span className={styles.settingsPasswordLabel}>Username</span>
             <input type="text" className={styles.input} value="admin" readOnly />
           </label>
-          <PasswordInput label="Password" value="********" onChange={() => {}} readOnly />
+          <PasswordInput label="Password" value={adminUser?.user?.plainPassword || "********"} onChange={() => {}} readOnly />
           <PasswordRowActions
             onEdit={() => setAdminModal({ mode: "edit" })}
             onReset={() => setAdminModal({ mode: "reset" })}
@@ -114,7 +127,7 @@ export default function AdminSettingsPage() {
                 <span>{member.username || "—"}</span>
               </div>
               <PasswordInput
-                value="********"
+                value={member.password || "********"}
                 onChange={() => {}}
                 readOnly
                 placeholder="Password"
@@ -160,7 +173,7 @@ export default function AdminSettingsPage() {
                 <span>{client.portalUsername || "—"}</span>
               </div>
               <PasswordInput
-                value="********"
+                value={client.password || "********"}
                 onChange={() => {}}
                 readOnly
                 placeholder="Portal password"
@@ -196,7 +209,7 @@ export default function AdminSettingsPage() {
         mode={adminModal?.mode}
         onClose={() => setAdminModal(null)}
         onSaved={(message) => {
-
+          fetchAdminUser();
           showToast(message);
         }}
       />
@@ -211,6 +224,11 @@ export default function AdminSettingsPage() {
           if (!portalModal) return;
           try {
             await api.put(`/api/auth/change-password/${portalModal.userId}`, { newPassword: password });
+            if (portalModal.type === "client") {
+              fetchClients();
+            } else {
+              fetchStaff();
+            }
             showToast(
               portalModal.mode === "reset"
                 ? `${portalModal.name}'s password reset.`

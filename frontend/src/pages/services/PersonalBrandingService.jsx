@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useServicePricing } from "../../context/PricingContext.jsx";
 import { formatInr } from "../../lib/format.js";
 import ProposalSummaryPanel from "../../components/ProposalSummaryPanel.jsx";
@@ -24,7 +24,19 @@ export default function PersonalBrandingService({
   const { services } = useServicePricing();
   const service = services.find((s) => s.id === "personal-branding");
   const d = service?.detail;
-  const bundles = d?.bundles ?? [];
+  const legacyBundles = d?.bundles ?? [];
+  const lineItems = d?.lineItems ?? [];
+  const bundles = useMemo(() => {
+    return lineItems.length > 0 ? lineItems.map((line) => {
+      const opt = line.options?.[0] || {};
+      return {
+        id: line.id,
+        name: line.name,
+        price: opt.price ?? 0,
+        includes: opt.bulletPoints && opt.bulletPoints.length > 0 ? opt.bulletPoints : [],
+      };
+    }) : legacyBundles;
+  }, [lineItems, legacyBundles]);
   const storedSelection = selectedList?.find((item) => item.serviceId === service?.id);
   const didInteractRef = useRef(false);
   const [bundleId, setBundleId] = useState(() => computePersonalBrandingState(storedSelection, bundles));
@@ -88,7 +100,7 @@ export default function PersonalBrandingService({
         </>
       }
     >
-      {step === 1 ? bundles.map((p) => <button key={p.id} type="button" onClick={() => { didInteractRef.current = true; setBundleId(bundleId === p.id ? null : p.id); }} className={["w-full rounded-2xl border p-4 text-left transition", bundleId === p.id ? "border-brand-500 bg-brand-50 shadow-sm" : "border-slate-200 bg-slate-50/60 hover:border-slate-300"].join(" ")}><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-lg font-bold text-slate-900">{p.name}</span><span className="text-base font-bold text-brand-700">{formatInr(p.price)}</span></div><ul className="mt-2 list-inside list-disc text-sm text-slate-600">{(p.includes ?? []).map((line, idx) => <li key={`${p.id}-${idx}`}>{line}</li>)}</ul></button>) : null}
+      {step === 1 ? bundles.map((p) => <button key={p.id} type="button" onClick={() => { didInteractRef.current = true; setBundleId(bundleId === p.id ? null : p.id); }} className={["w-full rounded-2xl border p-4 sm:p-5 text-left transition", bundleId === p.id ? "border-brand-500 bg-brand-50 shadow-sm" : "border-slate-200 bg-slate-50/60 hover:border-slate-300"].join(" ")}><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-lg font-bold text-slate-900">{p.name}</span><span className="text-base font-bold text-brand-700">{formatInr(p.price)}</span></div>{p.includes && p.includes.length > 0 ? <div className="mt-4"><p className="text-sm font-bold text-slate-800">What's Included</p><ul className="mt-2 ml-4 list-outside list-disc space-y-1.5 text-[13px] leading-relaxed text-slate-600">{(p.includes ?? []).map((line, idx) => <li key={`${p.id}-${idx}`} className="pl-1">{line}</li>)}</ul></div> : null}</button>) : null}
       {step === 2 ? <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">{activeLines.length > 0 ? <><p className="text-base font-bold text-slate-900">{activeLines[0].label}</p><ul className="mt-2 list-inside list-disc text-sm text-slate-600">{(plan?.includes ?? []).map((line) => <li key={line}>{line}</li>)}</ul><div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-3"><p className="text-sm font-semibold text-brand-900">Need another service?</p><div className="mt-2 flex flex-wrap gap-2"><button type="button" onClick={() => onMultiDecision?.("yes", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal })} className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-100">Yes, add more</button><button type="button" onClick={() => onMultiDecision?.("no", { serviceId: service.id, serviceName: service.name, lines: activeLines, total: activeTotal })} className="btn-cta" style={{ flex: "0 0 auto", minHeight: "2.25rem", fontSize: "0.8125rem", padding: "0.4rem 0.75rem" }}>No, continue</button></div></div></> : <p className="text-sm text-slate-500">No plan selected.</p>}</div> : null}
       {step === 3 ? <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700"><input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} /><span>{d?.agreementText}</span></label> : null}
       {step === 4 ? <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Your name" className="rounded-lg border border-slate-200 px-3 py-2 text-sm" /><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="Your email" type="email" className="rounded-lg border border-slate-200 px-3 py-2 text-sm" /><input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="Your phone number" className="rounded-lg border border-slate-200 px-3 py-2 text-sm" /></div> : null}

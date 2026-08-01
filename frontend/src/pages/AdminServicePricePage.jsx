@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FaFloppyDisk, FaMagnifyingGlass } from "react-icons/fa6";
+import { FaFloppyDisk, FaMagnifyingGlass, FaPlus } from "react-icons/fa6";
 import styles from "../components/admin/Admin.module.css";
 import { AGENCY_SERVICES } from "../lib/agencyServices.js";
 import { useServicePricing } from "../context/PricingContext.jsx";
@@ -7,8 +7,29 @@ import { formatSavedLabel } from "../lib/format.js";
 import ServicePriceList from "../components/admin/pricing/ServicePriceList.jsx";
 
 export default function AdminServicePricePage() {
-  const { services, save, lastSavedAt } = useServicePricing();
+  const { services, setServices, save, saveService, lastSavedAt } = useServicePricing();
   const [query, setQuery] = useState("");
+  const [showAdd, setShowAdd] = useState(false);
+  const [addName, setAddName] = useState("");
+
+  const handleAddService = async () => {
+    const name = addName.trim();
+    if (!name) return;
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const newService = {
+      id,
+      name,
+      detail: { type: "digital_marketing", fixedPlansTitle: "Fixed Plans", alaCarteTitle: "A-la-carte", customSections: [] }
+    };
+    setServices((prev) => [...prev, newService]);
+    setAddName("");
+    setShowAdd(false);
+    try {
+      await saveService(id, newService);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -27,6 +48,10 @@ export default function AdminServicePricePage() {
           <p className={styles.pricingSaveStatus}>{formatSavedLabel(lastSavedAt)}</p>
         </div>
         <div className={styles.pricingPageActions}>
+          <button type="button" className={styles.buttonGhost} onClick={() => setShowAdd(!showAdd)}>
+            <FaPlus aria-hidden />
+            Add Service
+          </button>
           <button type="button" className={styles.buttonPrimary} onClick={save}>
             <FaFloppyDisk aria-hidden />
             Save all
@@ -51,6 +76,21 @@ export default function AdminServicePricePage() {
             />
           </label>
         </div>
+
+        {showAdd && (
+          <div style={{ padding: "1rem", borderBottom: "1px solid var(--slate-200)", background: "var(--slate-50)" }}>
+            <div style={{ display: "flex", gap: "0.5rem", maxWidth: "400px" }}>
+              <input
+                className={styles.input}
+                placeholder="Service name (e.g. SEO)"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleAddService(); }}
+              />
+              <button type="button" className={styles.buttonPrimary} onClick={handleAddService}>Add</button>
+            </div>
+          </div>
+        )}
 
         <ServicePriceList services={filtered} />
 
