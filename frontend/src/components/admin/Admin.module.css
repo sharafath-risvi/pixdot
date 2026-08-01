@@ -1933,17 +1933,19 @@
 }
 
 .sidebarLogo {
-  height: 48px;
-  width: auto;
-  max-width: 150px;
-  object-fit: contain;
-  object-position: left center;
+  height: 42px;
+  width: 42px;
+  border-radius: 999px;
+  object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
 }
 
 .sidebarLogoCollapsed {
   height: 36px;
   width: 36px;
-  object-fit: contain;
+  border-radius: 999px;
+  object-fit: cover;
   margin: 0 auto;
 }
 

@@ -12,9 +12,14 @@ export default function Navbar() {
       <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link
           to="/"
-          className="flex items-center text-ink transition duration-300 hover:opacity-90"
+          className="flex items-center gap-2.5 text-ink transition duration-300 hover:opacity-90"
         >
-          <img src={logoSrc} alt="Logo" className="h-14 w-auto max-w-[200px] object-contain" />
+          <img
+            src={logoSrc}
+            alt="Pixdot"
+            className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-slate-200/80 sm:h-11 sm:w-11"
+          />
+          <span className="text-lg font-semibold tracking-tight text-[#0e0e14] sm:text-xl">pixdot</span>
           <span className="sr-only">Home</span>
         </Link>
 
