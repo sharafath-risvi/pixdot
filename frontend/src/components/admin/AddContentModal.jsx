@@ -80,9 +80,11 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
                 setError("");
               }}
             >
-              <option value="pending">Pending (RED)</option>
-              <option value="completed">Completed (GREEN)</option>
-              <option value="issue">Team issue (BLUE)</option>
+              <option value="pending">PENDING</option>
+              <option value="completed">COMPLETED</option>
+              <option value="issue">TEAM ISSUES</option>
+              <option value="waiting_approval">WAITING FOR APPROVAL</option>
+              <option value="approval_received">APPROVAL RECEIVED</option>
             </select>
           </div>
           {status === "pending" && (

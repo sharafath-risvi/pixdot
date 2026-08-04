@@ -35,7 +35,7 @@ const calendarEventSchema = new mongoose.Schema(
     subtype: { type: String, trim: true, default: "" },
     status: {
       type: String,
-      enum: ["pending", "completed", "issue"],
+      enum: ["pending", "completed", "issue", "waiting_approval", "approval_received"],
       default: "pending",
     },
     completed: { type: Boolean, default: false },

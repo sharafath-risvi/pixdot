@@ -3,6 +3,8 @@ import styles from "./Admin.module.css";
 function getStatusClass(status) {
   if (status === "completed") return styles.dayCompleted;
   if (status === "issue") return styles.dayIssue;
+  if (status === "waiting_approval") return styles.dayWaitingApproval;
+  if (status === "approval_received") return styles.dayApprovalReceived;
   return styles.dayPending;
 }
 
