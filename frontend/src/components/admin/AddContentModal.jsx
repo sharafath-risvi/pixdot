@@ -94,11 +94,19 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
               }}
               style={{ backgroundColor: getStatusColor(status) }}
             >
+<<<<<<< HEAD
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
+=======
+              <option value="pending">PENDING</option>
+              <option value="completed">COMPLETED</option>
+              <option value="issue">TEAM ISSUES</option>
+              <option value="waiting_approval">WAITING FOR APPROVAL</option>
+              <option value="approval_received">APPROVAL RECEIVED</option>
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
             </select>
           </div>
           {status === "pending" && (

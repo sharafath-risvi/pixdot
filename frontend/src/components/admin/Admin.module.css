@@ -454,31 +454,31 @@
 }
 
 .metaDayStack {
-  max-height: 120px;
+  max-height: 200px;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
 .metaChip {
   border-radius: 8px;
-  padding: 6px;
+  padding: 10px 12px;
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .metaChipType {
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
   line-height: 1.2;
 }
 
 .metaChipName {
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #1e293b;
   line-height: 1.25;
@@ -624,6 +624,7 @@
 
 .calendarGrid {
   display: grid;
+<<<<<<< HEAD
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
 }
@@ -645,10 +646,15 @@
   border-radius: 12px;
   background: #f8fafc;
   border: 1px dashed #e2e8f0;
+=======
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 .calendarDay {
   border: 1px solid #e2e8f0;
+<<<<<<< HEAD
   border-radius: 12px;
   min-height: 140px;
   padding: 10px;
@@ -656,6 +662,15 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+=======
+  border-radius: 10px;
+  min-height: 160px;
+  padding: 12px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 .calendarDayTop {
@@ -673,7 +688,11 @@
 }
 
 .dayNumber {
+<<<<<<< HEAD
   font-size: 16px;
+=======
+  font-size: 15px;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
   font-weight: 700;
   line-height: 1.2;
   color: var(--dash-text, #0e0e14);
@@ -712,7 +731,11 @@
 .dayItems {
   display: flex;
   flex-direction: column;
+<<<<<<< HEAD
   gap: 8px;
+=======
+  gap: 10px;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 /* —— Premium content cards —— */
@@ -918,18 +941,23 @@
 /* Legacy status fills kept for any older className references */
 .dayItem {
   border-radius: 8px;
-  padding: 6px;
-  font-size: 12px;
+  padding: 10px 12px;
+  font-size: 13.5px;
   border: 1px solid transparent;
 }
 
 .dayPending {
   background: #FEF3C7;
+<<<<<<< HEAD
   border-color: #FCD34D;
+=======
+  border-color: #FDE68A;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 .dayCompleted {
   background: #DCFCE7;
+<<<<<<< HEAD
   border-color: #86EFAC;
 }
 
@@ -937,15 +965,28 @@
 .dayTeamIssues {
   background: #FEE2E2;
   border-color: #FCA5A5;
+=======
+  border-color: #BBF7D0;
+}
+
+.dayIssue {
+  background: #FEE2E2;
+  border-color: #FECACA;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 .dayWaitingApproval {
   background: #DBEAFE;
+<<<<<<< HEAD
   border-color: #93C5FD;
+=======
+  border-color: #BFDBFE;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 .dayApprovalReceived {
   background: #EDE9FE;
+<<<<<<< HEAD
   border-color: #C4B5FD;
 }
 
@@ -954,22 +995,25 @@
   font-size: 10px;
   font-weight: 600;
   opacity: 0.85;
+=======
+  border-color: #DDD6FE;
+>>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 .itemActions {
-  margin-top: 6px;
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tinyAction {
-  font-size: 10px;
+  font-size: 11px;
   background: #ffffff;
   border: 1px solid var(--dash-border);
   border-radius: 6px;
-  padding: 2px 5px;
+  padding: 4px 8px;
   cursor: pointer;
 }
 
