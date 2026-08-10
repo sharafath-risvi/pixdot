@@ -1,4 +1,5 @@
 import { FaArrowRightFromBracket } from "react-icons/fa6";
+import NotificationBell from "../shared/NotificationBell.jsx";
 import styles from "./Admin.module.css";
 
 export default function Navbar({ onLogout }) {
@@ -10,6 +11,7 @@ export default function Navbar({ onLogout }) {
       </div>
 
       <div className={styles.topbarActions}>
+        <NotificationBell />
         <button type="button" className={styles.adminLogoutBtn} onClick={onLogout}>
           <FaArrowRightFromBracket aria-hidden />
           <span>Logout</span>

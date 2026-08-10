@@ -4,6 +4,8 @@ import { FaArrowRightFromBracket, FaBars, FaXmark } from "react-icons/fa6";
 import adminStyles from "../admin/Admin.module.css";
 import staffStyles from "./Staff.module.css";
 import StaffSidebar from "./StaffSidebar.jsx";
+import NotificationBell from "../shared/NotificationBell.jsx";
+import PendingTasksPanel from "./PendingTasksPanel.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function StaffLayout() {
@@ -29,6 +31,7 @@ export default function StaffLayout() {
         </button>
         <h2 className={adminStyles.mobileTopbarTitle}>Staff</h2>
         <div className={adminStyles.mobileTopbarActions}>
+          <NotificationBell />
           <button type="button" onClick={handleLogout} className={adminStyles.iconBtn} aria-label="Log out">
             <FaArrowRightFromBracket />
           </button>
@@ -67,6 +70,7 @@ export default function StaffLayout() {
               </div>
             </div>
             <div className={adminStyles.topbarActions}>
+              <NotificationBell />
               <button type="button" className={staffStyles.staffLogoutBtn} onClick={handleLogout}>
                 <FaArrowRightFromBracket aria-hidden />
                 <span>Log out</span>
@@ -75,6 +79,7 @@ export default function StaffLayout() {
           </header>
 
           <div className={adminStyles.adminOutlet}>
+            <PendingTasksPanel />
             <Outlet />
           </div>
         </main>

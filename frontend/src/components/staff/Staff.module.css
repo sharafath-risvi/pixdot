@@ -207,6 +207,13 @@
   flex-shrink: 0;
 }
 
+.staffNavDivider {
+  height: 1px;
+  margin: 8px 4px;
+  background: var(--staff-border);
+  border: none;
+}
+
 .staffNavLink {
   display: flex;
   align-items: center;

@@ -1,0 +1,134 @@
+.panel {
+  border: 1px solid var(--dash-border, #e2e2ea);
+  border-radius: 16px;
+  background: #fff;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px -10px rgba(14, 14, 20, 0.12);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--dash-muted, #656575);
+}
+
+.close {
+  border: none;
+  background: #f1f5f9;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  color: #64748b;
+}
+
+.alert {
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.missedList {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.section {
+  margin-bottom: 12px;
+}
+
+.section h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.kindGrid,
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kindChip,
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.muted {
+  font-size: 13px;
+  color: var(--dash-muted, #656575);
+}
+
+.upcoming {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--dash-muted, #656575);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.primary,
+.secondary {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.primary {
+  border: none;
+  background: var(--dash-accent, #0a4174);
+  color: #fff;
+}
+
+.secondary {
+  border: 1px solid var(--dash-border, #e2e2ea);
+  background: #fff;
+  color: var(--dash-text, #0e0e14);
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+  }
+}

@@ -13,6 +13,8 @@ import StaffClientDetailPage, {
 } from "./pages/staff/StaffClientDetailPage.jsx";
 import StaffProfilePage from "./pages/StaffProfilePage.jsx";
 import StaffNotesPage from "./pages/StaffNotesPage.jsx";
+import StaffSchedulePage from "./pages/staff/StaffSchedulePage.jsx";
+import StaffDailyReportPage from "./pages/staff/StaffDailyReportPage.jsx";
 import ClientDashboardPage from "./pages/ClientDashboardPage.jsx";
 import ClientDetailsPage from "./pages/ClientDetailsPage.jsx";
 import ClientDashboardSection from "./components/client/ClientDashboardSection.jsx";
@@ -131,6 +133,8 @@ export default function App() {
               >
                 <Route index element={<Navigate to="clients" replace />} />
                 <Route path="clients" element={<StaffClientsPage />} />
+                <Route path="schedule" element={<StaffSchedulePage />} />
+                <Route path="reports" element={<StaffDailyReportPage />} />
                 <Route path="client/:clientSlug" element={<StaffClientDetailPage />}>
                   <Route index element={<StaffClientProfileView />} />
                   <Route path="content" element={<StaffClientContentView />} />

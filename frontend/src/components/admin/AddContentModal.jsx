@@ -1,9 +1,19 @@
 import { useEffect, useState } from "react";
 import styles from "./Admin.module.css";
+import { STATUS_OPTIONS, getStatusColor, normalizeStatus } from "../../lib/contentStatus.js";
 
 const posterTypes = ["Creative Poster", "Normal Poster", "AI Poster"];
-const reelTypes = ["AI Reel", "Edited Reel"];
-const shootTypes = ["Shoot"];
+const reelTypes = ["AI Reel", "Edited Reel", "Animation Reel", "Voice-Over Reel"];
+const shootTypes = ["Shoot", "Shoot Reel"];
+const creativeTypes = ["Creative", "Creative Ad"];
+
+function subtypesForKind(kind) {
+  if (kind === "Poster") return posterTypes;
+  if (kind === "Reel") return reelTypes;
+  if (kind === "Shoot") return shootTypes;
+  if (kind === "Creative") return creativeTypes;
+  return posterTypes;
+}
 
 export default function AddContentModal({ open, onClose, onSubmit, initialValue, dayLabel }) {
   const [kind, setKind] = useState("Poster");
@@ -16,9 +26,9 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
   useEffect(() => {
     if (!open) return;
     if (initialValue) {
-      setKind(initialValue.kind);
-      setSubtype(initialValue.subtype);
-      setStatus(initialValue.status);
+      setKind(initialValue.kind || "Poster");
+      setSubtype(initialValue.subtype || posterTypes[0]);
+      setStatus(normalizeStatus(initialValue.status));
       setReasonNote(initialValue.reasonNote || "");
       setContentPlan(initialValue.contentPlan || "");
     } else {
@@ -32,12 +42,14 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
   }, [open, initialValue]);
 
   useEffect(() => {
-    setSubtype(kind === "Poster" ? posterTypes[0] : kind === "Reel" ? reelTypes[0] : shootTypes[0]);
-  }, [kind]);
+    if (initialValue) return;
+    const opts = subtypesForKind(kind);
+    setSubtype(opts[0]);
+  }, [kind, initialValue]);
 
   if (!open) return null;
 
-  const options = kind === "Poster" ? posterTypes : kind === "Reel" ? reelTypes : shootTypes;
+  const options = subtypesForKind(kind);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,7 +60,7 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
     onSubmit({
       kind,
       subtype,
-      status,
+      status: normalizeStatus(status),
       completed: status === "completed",
       reasonNote: status === "pending" ? reasonNote.trim() : "",
       contentPlan: contentPlan.trim(),
@@ -66,6 +78,7 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
               <option>Poster</option>
               <option>Reel</option>
               <option>Shoot</option>
+              <option>Creative</option>
             </select>
             <select className={styles.select} value={subtype} onChange={(e) => setSubtype(e.target.value)}>
               {options.map((opt) => (
@@ -74,15 +87,18 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
             </select>
             <select
               className={styles.select}
-              value={status}
+              value={normalizeStatus(status)}
               onChange={(e) => {
                 setStatus(e.target.value);
                 setError("");
               }}
+              style={{ backgroundColor: getStatusColor(status) }}
             >
-              <option value="pending">Pending (RED)</option>
-              <option value="completed">Completed (GREEN)</option>
-              <option value="issue">Team issue (BLUE)</option>
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
           {status === "pending" && (
@@ -102,7 +118,7 @@ export default function AddContentModal({ open, onClose, onSubmit, initialValue,
               />
             </div>
           )}
-          
+
           <div className={styles.noteGroup}>
             <label className={styles.cardSub} htmlFor="content-plan">
               Post / Video / Content Plan

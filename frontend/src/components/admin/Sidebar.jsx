@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaAnglesLeft, FaAnglesRight, FaChartLine, FaGear, FaGrip, FaUserGroup, FaUsers } from "react-icons/fa6";
+import { FaAnglesLeft, FaAnglesRight, FaCalendarDays, FaChartLine, FaClipboardList, FaGear, FaGrip, FaUserGroup, FaUsers } from "react-icons/fa6";
 import AdminProfileMenu from "./AdminProfileMenu.jsx";
 import { PIXDOT_LOGO_FULL_URL, PIXDOT_LOGO_ICON_URL } from "../../lib/brand.js";
 import styles from "./Admin.module.css";
@@ -8,6 +8,8 @@ const sections = [
   { to: "/admin-dashboard", label: "Dashboard", icon: FaGrip, end: true },
   { to: "/admin-dashboard/services", label: "Services", icon: FaChartLine },
   { to: "/admin-dashboard/clients", label: "Clients", icon: FaUsers },
+  { to: "/admin-dashboard/schedule", label: "Monthly Schedule", icon: FaCalendarDays },
+  { to: "/admin-dashboard/reports", label: "Daily Reports", icon: FaClipboardList },
   { to: "/admin-dashboard/team", label: "Team", icon: FaUserGroup },
 ];
 
@@ -88,3 +90,4 @@ export default function Sidebar({
     </aside>
   );
 }
+

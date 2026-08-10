@@ -1,10 +1,15 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { FiEdit3, FiUser, FiUsers } from "react-icons/fi";
+import { FiCalendar, FiClipboard, FiEdit3, FiUser, FiUsers } from "react-icons/fi";
 import styles from "./Staff.module.css";
 
 const nav = [
   { to: "/staff/clients", label: "Clients", matchClientDetails: true, Icon: FiUsers },
   { to: "/staff/notes", label: "Notes", Icon: FiEdit3 },
+];
+
+const midNav = [
+  { to: "/staff/schedule", label: "Monthly Schedule", Icon: FiCalendar },
+  { to: "/staff/reports", label: "Daily Report", Icon: FiClipboard },
 ];
 
 export default function StaffSidebar({ onNavigate, inDrawer = false }) {
@@ -25,6 +30,27 @@ export default function StaffSidebar({ onNavigate, inDrawer = false }) {
                 const active = isActive || clientsBranch;
                 return `${styles.staffNavLink} ${active ? styles.staffNavLinkActive : ""}`;
               }}
+            >
+              <span className={styles.staffNavIcon} aria-hidden>
+                <Icon strokeWidth={2} />
+              </span>
+              <span className={styles.staffNavLabel}>{item.label}</span>
+            </NavLink>
+          );
+        })}
+
+        <div className={styles.staffNavDivider} aria-hidden />
+
+        {midNav.map((item) => {
+          const Icon = item.Icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={onNavigate}
+              className={({ isActive }) =>
+                `${styles.staffNavLink} ${isActive ? styles.staffNavLinkActive : ""}`
+              }
             >
               <span className={styles.staffNavIcon} aria-hidden>
                 <Icon strokeWidth={2} />

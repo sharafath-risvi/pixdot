@@ -6,6 +6,7 @@ import AdminNavbar from "./Navbar.jsx";
 import Sidebar from "./Sidebar.jsx";
 import AddClientModal from "./AddClientModal.jsx";
 import AddStaffModal from "./AddStaffModal.jsx";
+import NotificationBell from "../shared/NotificationBell.jsx";
 import styles from "./Admin.module.css";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useWorkspace } from "../../context/WorkspaceContext.jsx";
@@ -46,6 +47,7 @@ export default function AdminLayout() {
         </button>
         <h2 className={styles.mobileTopbarTitle}>Admin</h2>
         <div className={styles.mobileTopbarActions}>
+          <NotificationBell />
           <button type="button" onClick={handleLogout} className={styles.adminLogoutBtn} aria-label="Log out">
             <FaArrowRightFromBracket aria-hidden />
             <span>Logout</span>

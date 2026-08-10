@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import AddContentModal from "./AddContentModal.jsx";
 import CalendarDay from "./CalendarDay.jsx";
 import CalendarMonthNav from "./CalendarMonthNav.jsx";
+import StatusLegend from "../shared/StatusLegend.jsx";
 import styles from "./Admin.module.css";
-import { formatMonthLabel, getDateKey, getMonthDays } from "../../lib/calendar.js";
+import { formatMonthLabel, getDateKey, getMonthDays, getWeekdayShort } from "../../lib/calendar.js";
+
+const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function Calendar({ title, store, onAdd, onUpdate, onDelete, readOnly = false }) {
   const [monthDate, setMonthDate] = useState(new Date());
@@ -14,6 +17,12 @@ export default function Calendar({ title, store, onAdd, onUpdate, onDelete, read
 
   const days = getMonthDays(monthDate);
   const monthLabel = formatMonthLabel(monthDate);
+
+  // JS getDay(): 0 = Sunday … 6 = Saturday — pad empty cells so dates align under weekday headers
+  const startWeekday = useMemo(
+    () => new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).getDay(),
+    [monthDate],
+  );
 
   const openAdd = (day) => {
     setActiveDay(day);
@@ -35,23 +44,43 @@ export default function Calendar({ title, store, onAdd, onUpdate, onDelete, read
 
   const withDayItems = (day) => store[getDateKey(monthDate, day)] || [];
 
+  const dayLabelFor = (day) => {
+    const weekday = getWeekdayShort(monthDate.getFullYear(), monthDate.getMonth(), day);
+    return `${day} ${weekday} ${monthLabel}`;
+  };
+
   return (
     <section className={styles.card}>
       <div className={styles.calendarHeader}>
         <div>
           <h2 className={styles.cardTitle}>{title}</h2>
           <p className={styles.cardSub}>
-            {readOnly ? "View only — updates from your team appear here." : "Interactive monthly planner (red/green/blue states)"}
+            {readOnly ? "View only — updates from your team appear here." : "Interactive monthly planner with status colors"}
           </p>
         </div>
         <CalendarMonthNav monthDate={monthDate} onMonthDateChange={setMonthDate} />
       </div>
 
-      <div className={styles.calendarGrid}>
+      <div style={{ marginBottom: 12 }}>
+        <StatusLegend compact />
+      </div>
+
+      <div className={styles.calendarGrid} role="grid" aria-label={`${monthLabel} calendar`}>
+        {WEEKDAY_HEADERS.map((label) => (
+          <div key={label} className={styles.calendarWeekdayHead} role="columnheader">
+            {label}
+          </div>
+        ))}
+
+        {Array.from({ length: startWeekday }, (_, i) => (
+          <div key={`pad-${i}`} className={styles.calendarDayEmpty} aria-hidden />
+        ))}
+
         {Array.from({ length: days }, (_, i) => i + 1).map((day) => (
           <CalendarDay
             key={day}
             day={day}
+            weekday={getWeekdayShort(monthDate.getFullYear(), monthDate.getMonth(), day)}
             items={withDayItems(day)}
             readOnly={readOnly}
             onAdd={() => openAdd(day)}
@@ -84,7 +113,7 @@ export default function Calendar({ title, store, onAdd, onUpdate, onDelete, read
           onClose={() => setModalOpen(false)}
           onSubmit={handleSubmit}
           initialValue={editItem}
-          dayLabel={activeDay ? `${activeDay} ${monthLabel}` : ""}
+          dayLabel={activeDay ? dayLabelFor(activeDay) : ""}
         />
       ) : null}
       {viewNoteItem && (

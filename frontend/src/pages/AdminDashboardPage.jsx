@@ -16,6 +16,8 @@ import AdminServicePricingDetailPage from "./admin/AdminServicePricingDetailPage
 import AdminServiceLineItemEditPage from "./admin/AdminServiceLineItemEditPage.jsx";
 import AdminServicePricingSettingsPage from "./admin/AdminServicePricingSettingsPage.jsx";
 import AdminServiceDigitalPricingPage from "./admin/AdminServiceDigitalPricingPage.jsx";
+import AdminSchedulePage from "./admin/AdminSchedulePage.jsx";
+import AdminReportsPage from "./admin/AdminReportsPage.jsx";
 
 export default function AdminDashboardPage() {
   return (
@@ -24,6 +26,8 @@ export default function AdminDashboardPage() {
         <Route index element={<AdminOverviewPage />} />
         <Route path="services" element={<AdminServicesPage />} />
         <Route path="clients" element={<AdminClientsPage />} />
+        <Route path="schedule" element={<AdminSchedulePage />} />
+        <Route path="reports" element={<AdminReportsPage />} />
         <Route path="client/:clientSlug" element={<AdminClientDetailPage />}>
           <Route index element={<AdminClientProfileView />} />
           <Route path="content" element={<AdminClientContentView />} />
