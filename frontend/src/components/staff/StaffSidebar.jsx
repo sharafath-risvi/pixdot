@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { FiCalendar, FiClipboard, FiEdit3, FiUser, FiUsers } from "react-icons/fi";
+import { FiCalendar, FiClipboard, FiEdit3, FiTarget, FiUser, FiUsers } from "react-icons/fi";
 import styles from "./Staff.module.css";
 
 const nav = [
@@ -9,6 +9,7 @@ const nav = [
 
 const midNav = [
   { to: "/staff/schedule", label: "Monthly Schedule", Icon: FiCalendar },
+  { to: "/staff/meta-schedule", label: "Meta Ads Schedule", Icon: FiTarget },
   { to: "/staff/reports", label: "Daily Report", Icon: FiClipboard },
 ];
 

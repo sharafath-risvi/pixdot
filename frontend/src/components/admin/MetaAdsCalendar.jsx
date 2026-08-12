@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CalendarMonthNav from "./CalendarMonthNav.jsx";
 import styles from "./Admin.module.css";
-import { formatMonthLabel, getDateKey, getMonthDays } from "../../lib/calendar.js";
+import { formatMonthLabel, getDateKey, getMonthDays, getWeekdayShort } from "../../lib/calendar.js";
 
-const adTypeOptions = [
+const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+export const adTypeOptions = [
   "Awareness Campaign",
   "Traffic Campaign",
   "Engagement Campaign",
@@ -25,19 +27,25 @@ function normalizeFormat(value) {
   return legacyFormatMap[value] || value;
 }
 
-const statusOptions = [
+export const statusOptions = [
   { value: "active", label: "Active" },
   { value: "completed", label: "Completed" },
   { value: "paused", label: "Paused" },
 ];
 
-function statusToClass(status) {
-  if (status === "active") return styles.metaStatusActive;
-  if (status === "paused") return styles.metaStatusPaused;
-  return styles.metaStatusCompleted;
+export function metaStatusToClass(status, css = styles) {
+  if (status === "active") return css.metaStatusActive;
+  if (status === "paused") return css.metaStatusPaused;
+  return css.metaStatusCompleted;
 }
 
-function MetaAdsFormModal({ open, onClose, onSubmit, initialValue, dayLabel, initialAdType }) {
+export function metaStatusColor(status) {
+  if (status === "active") return "#ecfdf5";
+  if (status === "paused") return "#fef9c3";
+  return "#fff1f2";
+}
+
+export function MetaAdsFormModal({ open, onClose, onSubmit, initialValue, dayLabel, initialAdType }) {
   const [adType, setAdType] = useState(initialValue?.adType || initialAdType || adTypeOptions[0]);
   const [campaignName, setCampaignName] = useState(initialValue?.campaignName || "");
   const [platform, setPlatform] = useState(
@@ -211,7 +219,7 @@ function MetaCampaignDetailsModal({ open, onClose, campaigns, onEdit, onDelete, 
             {campaigns.map((campaign) => (
               <article key={campaign.id} className={styles.metaDetailsCard}>
                 <div className={styles.row}>
-                  <span className={`${styles.metaPill} ${statusToClass(campaign.metaStatus)}`}>{campaign.adType}</span>
+                  <span className={`${styles.metaPill} ${metaStatusToClass(campaign.metaStatus)}`}>{campaign.adType}</span>
                   <span className={styles.metaMuted}>{normalizeFormat(campaign.platform)}</span>
                 </div>
                 <h4 className={styles.metaTitle}>{campaign.campaignName}</h4>
@@ -266,6 +274,10 @@ export default function MetaAdsCalendar({ store, onAdd, onUpdate, onDelete, titl
 
   const days = getMonthDays(monthDate);
   const monthLabel = formatMonthLabel(monthDate);
+  const startWeekday = useMemo(
+    () => new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).getDay(),
+    [monthDate],
+  );
 
   const withDayItems = (day) => {
     const items = store[getDateKey(monthDate, day)] || [];
@@ -358,9 +370,20 @@ export default function MetaAdsCalendar({ store, onAdd, onUpdate, onDelete, titl
         </select>
       </div>
 
-      <div className={styles.calendarGrid}>
+      <div className={styles.calendarGrid} role="grid" aria-label={`${monthLabel} Meta ads calendar`}>
+        {WEEKDAY_HEADERS.map((label) => (
+          <div key={label} className={styles.calendarWeekdayHead} role="columnheader">
+            {label}
+          </div>
+        ))}
+
+        {Array.from({ length: startWeekday }, (_, i) => (
+          <div key={`pad-${i}`} className={styles.calendarDayEmpty} aria-hidden />
+        ))}
+
         {Array.from({ length: days }, (_, i) => i + 1).map((day) => {
           const dayItems = withDayItems(day);
+          const weekday = getWeekdayShort(monthDate.getFullYear(), monthDate.getMonth(), day);
           return (
             <div
               key={day}
@@ -379,7 +402,10 @@ export default function MetaAdsCalendar({ store, onAdd, onUpdate, onDelete, titl
               }}
             >
               <div className={styles.calendarDayTop}>
-                <span className={styles.dayNumber}>{day}</span>
+                <div className={styles.dayLabelBlock}>
+                  <span className={styles.dayNumber}>{day}</span>
+                  <span className={styles.dayWeekday}>{weekday}</span>
+                </div>
                 {readOnly ? null : (
                   <button
                     type="button"
@@ -395,7 +421,7 @@ export default function MetaAdsCalendar({ store, onAdd, onUpdate, onDelete, titl
               </div>
               <div className={styles.metaDayStack}>
                 {dayItems.map((item) => (
-                  <div key={item.id} className={`${styles.metaChip} ${statusToClass(item.metaStatus)}`}>
+                  <div key={item.id} className={`${styles.metaChip} ${metaStatusToClass(item.metaStatus)}`}>
                     <span className={styles.metaChipType}>{item.adType}</span>
                     <span className={styles.metaChipName}>{item.campaignName}</span>
                   </div>
@@ -410,7 +436,12 @@ export default function MetaAdsCalendar({ store, onAdd, onUpdate, onDelete, titl
         <div className={styles.modalBackdrop} onClick={() => setShowAdTypePicker(false)}>
           <div className={styles.modalSmall} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.cardTitle}>Choose Ad Type</h3>
-            <p className={styles.cardSub}>Selected day: {activeDay} {monthLabel}</p>
+            <p className={styles.cardSub}>
+              Selected day:{" "}
+              {activeDay
+                ? `${activeDay} ${getWeekdayShort(monthDate.getFullYear(), monthDate.getMonth(), activeDay)} ${monthLabel}`
+                : monthLabel}
+            </p>
             <select
               className={styles.select}
               value={selectedAdType}
@@ -450,7 +481,11 @@ export default function MetaAdsCalendar({ store, onAdd, onUpdate, onDelete, titl
         onSubmit={handleSubmit}
         initialValue={editCampaign}
         initialAdType={selectedAdType}
-        dayLabel={activeDay ? `${activeDay} ${monthLabel}` : monthLabel}
+        dayLabel={
+          activeDay
+            ? `${activeDay} ${getWeekdayShort(monthDate.getFullYear(), monthDate.getMonth(), activeDay)} ${monthLabel}`
+            : monthLabel
+        }
       />
 
       <MetaCampaignDetailsModal

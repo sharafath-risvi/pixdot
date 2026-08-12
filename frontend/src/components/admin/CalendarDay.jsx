@@ -8,7 +8,6 @@ import {
   normalizeStatus,
 } from "../../lib/contentStatus.js";
 
-<<<<<<< HEAD
 const VISIBLE_LIMIT = 2;
 
 function ContentCard({ item, readOnly, onToggleComplete, onEditItem, onDeleteItem, onViewNote }) {
@@ -90,14 +89,6 @@ function ContentCard({ item, readOnly, onToggleComplete, onEditItem, onDeleteIte
       </div>
     </article>
   );
-=======
-function getStatusClass(status) {
-  if (status === "completed") return styles.dayCompleted;
-  if (status === "issue") return styles.dayIssue;
-  if (status === "waiting_approval") return styles.dayWaitingApproval;
-  if (status === "approval_received") return styles.dayApprovalReceived;
-  return styles.dayPending;
->>>>>>> 97d7b749ef59fdbc17a9e0482abb68eee0399456
 }
 
 export default function CalendarDay({

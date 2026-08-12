@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaArrowRightFromBracket, FaBars, FaXmark } from "react-icons/fa6";
 import adminStyles from "../admin/Admin.module.css";
 import staffStyles from "./Staff.module.css";
@@ -10,8 +10,10 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function StaffLayout() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const hidePending = pathname.startsWith("/staff/reports");
 
   const handleLogout = () => {
     logout();
@@ -79,7 +81,7 @@ export default function StaffLayout() {
           </header>
 
           <div className={adminStyles.adminOutlet}>
-            <PendingTasksPanel />
+            {hidePending ? null : <PendingTasksPanel />}
             <Outlet />
           </div>
         </main>

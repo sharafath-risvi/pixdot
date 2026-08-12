@@ -14,6 +14,7 @@ import StaffClientDetailPage, {
 import StaffProfilePage from "./pages/StaffProfilePage.jsx";
 import StaffNotesPage from "./pages/StaffNotesPage.jsx";
 import StaffSchedulePage from "./pages/staff/StaffSchedulePage.jsx";
+import StaffMetaSchedulePage from "./pages/staff/StaffMetaSchedulePage.jsx";
 import StaffDailyReportPage from "./pages/staff/StaffDailyReportPage.jsx";
 import ClientDashboardPage from "./pages/ClientDashboardPage.jsx";
 import ClientDetailsPage from "./pages/ClientDetailsPage.jsx";
@@ -134,6 +135,7 @@ export default function App() {
                 <Route index element={<Navigate to="clients" replace />} />
                 <Route path="clients" element={<StaffClientsPage />} />
                 <Route path="schedule" element={<StaffSchedulePage />} />
+                <Route path="meta-schedule" element={<StaffMetaSchedulePage />} />
                 <Route path="reports" element={<StaffDailyReportPage />} />
                 <Route path="client/:clientSlug" element={<StaffClientDetailPage />}>
                   <Route index element={<StaffClientProfileView />} />
