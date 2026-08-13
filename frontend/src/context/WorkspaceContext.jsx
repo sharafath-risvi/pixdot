@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useAuth } from "./AuthContext.jsx";
 import { useToast } from "./ToastContext.jsx";
 import api from "../lib/api.js";
+import { clientService, staffService } from "../services/index.js";
 
 const WorkspaceContext = createContext(null);
 
@@ -18,13 +19,11 @@ export function WorkspaceProvider({ children }) {
   const { isAuthenticated, role } = useAuth();
   const toast = useToast();
 
-  // Fetch staff from backend
   const fetchStaff = useCallback(async () => {
     if (!isAuthenticated || role === "client") return;
     try {
       setStaffLoading(true);
-      const response = await api.get("/api/staff");
-      const fetchedStaff = response.data.data.map(s => ({ ...s, id: s._id }));
+      const fetchedStaff = await staffService.getStaff();
       setStaffMembers(fetchedStaff);
     } catch (err) {
       console.error("Failed to fetch staff from backend:", err);
@@ -33,19 +32,15 @@ export function WorkspaceProvider({ children }) {
     }
   }, [isAuthenticated, role]);
 
-  // Fetch on auth change
   useEffect(() => {
     fetchStaff();
   }, [fetchStaff]);
 
-  // Fetch clients from backend
   const fetchClients = useCallback(async (silent = false) => {
     if (!isAuthenticated || role === "client") return;
     try {
       if (!silent) setClientsLoading(true);
-      const response = await api.get("/api/clients");
-      // Map MongoDB _id to id to match existing frontend code expectation
-      const fetchedClients = response.data.data.map(c => ({ ...c, id: c._id }));
+      const fetchedClients = await clientService.getClients();
       setClients(fetchedClients);
     } catch (err) {
       console.error("Failed to fetch clients from backend:", err);

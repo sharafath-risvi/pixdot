@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import api from "../lib/api.js";
 import { useAuth } from "./AuthContext.jsx";
 import { useWorkspace } from "./WorkspaceContext.jsx";
 import { usePersonalNotes } from "../hooks/usePersonalNotes.js";
@@ -8,8 +9,29 @@ const NOTES_STORAGE_KEY = "lp_staff_notes_v1";
 const StaffPersonalContext = createContext(null);
 
 export function StaffPersonalProvider({ children }) {
-  const { role, staffUsername } = useAuth();
+  const { role, staffUsername, staffId } = useAuth();
   const { staffMembers, updateStaffMember, staffSalaryVisibleToSelf } = useWorkspace();
+  const [ownStaff, setOwnStaff] = useState(null);
+
+  // Staff cannot list all staff — load own record for name/role.
+  useEffect(() => {
+    if (role !== "staff" || !staffId) {
+      setOwnStaff(null);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get(`/api/staff/${staffId}`);
+        if (!cancelled) setOwnStaff(res.data?.data || null);
+      } catch {
+        if (!cancelled) setOwnStaff(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [role, staffId]);
 
   const currentStaff = useMemo(() => {
     if (role !== "staff" || !staffUsername) return null;
@@ -18,22 +40,35 @@ export function StaffPersonalProvider({ children }) {
     if (member) {
       return { ...member, profileImage: member.profileImage ?? "", isVirtual: false };
     }
-    // Logged-in staff without a workspace record (e.g. account removed by admin).
+    if (ownStaff) {
+      return {
+        ...ownStaff,
+        id: ownStaff._id || ownStaff.id,
+        username,
+        profileImage: ownStaff.profileImage ?? "",
+        role: ownStaff.role || "",
+        isVirtual: false,
+      };
+    }
     return {
       id: `virtual-${username}`,
       name: staffUsername,
       email: "",
       phone: "",
-      role: "Staff",
+      role: "",
       salary: "",
       username,
       profileImage: "",
       isVirtual: true,
     };
-  }, [role, staffUsername, staffMembers]);
+  }, [role, staffUsername, staffMembers, ownStaff]);
 
   const staffNotesKey = currentStaff?.id ?? null;
-  const { notes, addNote, updateNote, deleteNote, loading, error, clearError } = usePersonalNotes(NOTES_STORAGE_KEY, staffNotesKey, "note");
+  const { notes, addNote, updateNote, deleteNote, loading, error, clearError } = usePersonalNotes(
+    NOTES_STORAGE_KEY,
+    staffNotesKey,
+    "note",
+  );
 
   const updateMyProfile = useCallback(
     (patch) => {
@@ -63,7 +98,19 @@ export function StaffPersonalProvider({ children }) {
       updateMyProfile,
       showSalary,
     }),
-    [currentStaff, staffNotesKey, notes, addNote, updateNote, deleteNote, loading, error, clearError, updateMyProfile, showSalary],
+    [
+      currentStaff,
+      staffNotesKey,
+      notes,
+      addNote,
+      updateNote,
+      deleteNote,
+      loading,
+      error,
+      clearError,
+      updateMyProfile,
+      showSalary,
+    ],
   );
 
   return <StaffPersonalContext.Provider value={value}>{children}</StaffPersonalContext.Provider>;

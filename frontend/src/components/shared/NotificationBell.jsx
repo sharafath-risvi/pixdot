@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBell } from "react-icons/fi";
-import api from "../../lib/api.js";
+import { notificationService } from "../../services/index.js";
 import styles from "./NotificationBell.module.css";
 
 function timeAgo(dateStr) {
@@ -24,11 +24,11 @@ export default function NotificationBell({ pollMs = 60000 }) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/notifications", { params: { limit: 30 } });
-      setItems(res.data?.data?.items || []);
-      setUnreadCount(res.data?.data?.unreadCount || 0);
+      const data = await notificationService.list({ limit: 30 });
+      setItems(data.items || []);
+      setUnreadCount(data.unreadCount || 0);
     } catch {
-      /* silent — bell is non-blocking */
+      /* silent — bell is non-blocking; backend may not expose notifications yet */
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,8 @@ export default function NotificationBell({ pollMs = 60000 }) {
 
   const markAll = async () => {
     try {
-      await api.put("/api/notifications/read-all");
+      const ok = await notificationService.markAllRead();
+      if (!ok) return;
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch {
@@ -62,11 +63,13 @@ export default function NotificationBell({ pollMs = 60000 }) {
   const openItem = async (n) => {
     if (!n.isRead) {
       try {
-        await api.put(`/api/notifications/${n.id || n._id}/read`);
-        setItems((prev) =>
-          prev.map((x) => ((x.id || x._id) === (n.id || n._id) ? { ...x, isRead: true } : x))
-        );
-        setUnreadCount((c) => Math.max(0, c - 1));
+        const ok = await notificationService.markRead(n.id || n._id);
+        if (ok) {
+          setItems((prev) =>
+            prev.map((x) => ((x.id || x._id) === (n.id || n._id) ? { ...x, isRead: true } : x)),
+          );
+          setUnreadCount((c) => Math.max(0, c - 1));
+        }
       } catch {
         /* ignore */
       }

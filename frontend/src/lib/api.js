@@ -1,47 +1,66 @@
 import axios from "axios";
-import { readJson } from "./storage.js";
+import { readJson, writeJson } from "./storage.js";
 
-const envUrl = import.meta.env.VITE_API_URL;
-const baseURL =
-  envUrl && envUrl !== "http://localhost:3001"
-    ? envUrl
-    : import.meta.env.PROD
-      ? ""
-      : "http://localhost:3001";
+const AUTH_STORAGE_KEY = "lp_auth_v1";
+
+const envUrl = String(import.meta.env.VITE_API_URL || "").trim();
+const baseURL = envUrl || (import.meta.env.PROD ? "" : "http://localhost:3001");
 
 const api = axios.create({
   baseURL,
   headers: {
     "Cache-Control": "no-cache, no-store, must-revalidate",
-    "Pragma": "no-cache",
-    "Expires": "0"
-  }
+    Pragma: "no-cache",
+    Expires: "0",
+  },
 });
 
-// Request interceptor to attach JWT token
+/** Optional app-level handler (AuthProvider registers logout). */
+let unauthorizedHandler = null;
+
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = typeof handler === "function" ? handler : null;
+}
+
+export function getApiBaseUrl() {
+  return baseURL;
+}
+
 api.interceptors.request.use(
   (config) => {
-    const authData = readJson("lp_auth_v1");
-    if (authData && authData.token) {
+    const authData = readJson(AUTH_STORAGE_KEY);
+    if (authData?.token) {
       config.headers.Authorization = `Bearer ${authData.token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
-// Optional response interceptor for handling 401s (token expiry, etc.)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // You can trigger a logout here if needed, or let components handle it
-      // For now, we'll just reject the promise
+    const status = error.response?.status;
+    const url = String(error.config?.url || "");
+    const isLoginAttempt = url.includes("/api/auth/login");
+
+    if (status === 401 && !isLoginAttempt) {
+      writeJson(AUTH_STORAGE_KEY, {
+        isAuthenticated: false,
+        role: null,
+        staffUsername: null,
+        clientId: null,
+        staffId: null,
+        userId: null,
+        token: null,
+        staffRole: null,
+        staffName: null,
+      });
+      unauthorizedHandler?.();
     }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

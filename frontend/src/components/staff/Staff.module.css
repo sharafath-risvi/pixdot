@@ -639,6 +639,32 @@
   }
 }
 
+/* Daily Report — use full viewport height on phones/tablets */
+.reportsOutlet {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .reportsOutlet {
+    padding-bottom: 8px !important;
+  }
+
+  .staffPage:has(.reportsOutlet) :global(.adminMain),
+  .staffPage .reportsOutlet {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .reportsOutlet {
+    padding: 0 4px 4px !important;
+    margin: 0;
+  }
+}
+
 @media (max-width: 900px) {
   .staffModalGrid2 {
     grid-template-columns: 1fr;

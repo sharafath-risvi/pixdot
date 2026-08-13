@@ -2612,6 +2612,13 @@
     gap: 14px;
   }
 
+  /* Daily Report sheet fills remaining viewport on tablet/phone */
+  .adminOutlet:has([class*="page"]) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
   .welcomeCard {
     padding: 22px 18px;
     border-radius: 16px;

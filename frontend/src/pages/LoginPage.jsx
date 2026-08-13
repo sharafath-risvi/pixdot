@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaLock, FaUser, FaChartLine } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
-import api from "../lib/api.js";
+import { authService, getErrorMessage } from "../services/index.js";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
@@ -26,12 +26,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await api.post("/api/auth/login", {
-        username: username.trim(),
-        password: password.trim(),
-      });
-
-      const { data } = response.data;
+      const data = await authService.login(username.trim(), password.trim());
 
       login({
         role: data.role,
@@ -40,6 +35,8 @@ export default function LoginPage() {
         staffId: data.staffId,
         userId: data.userId,
         token: data.token,
+        staffRole: data.staffRole || null,
+        staffName: data.staffName || null,
       });
 
       const nextPath = searchParams.get("next");
@@ -71,7 +68,7 @@ export default function LoginPage() {
           : data.dashboard;
       navigate(destination, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid username or password.");
+      setError(getErrorMessage(err, "Invalid username or password."));
     } finally {
       setLoading(false);
     }

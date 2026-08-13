@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import api from "../lib/api.js";
+import { notesService, getErrorMessage } from "../services/index.js";
 
 function toSimpleNote(note) {
-  if (!note?._id) return null;
+  if (!note) return null;
+  const id = note.id || note._id;
+  if (!id) return null;
   return {
-    id: note._id, // map backend _id to frontend id
+    id: String(id),
     title: note.title || "Untitled",
     description: note.description || "",
     date: note.date || "",
@@ -13,10 +15,13 @@ function toSimpleNote(note) {
 }
 
 /**
- * Personal notes CRUD persisted to MongoDB via backend API.
- * Used by both the staff and client portals.
+ * Personal notes CRUD via notesService (staff + client portals).
+ * storageKey / idPrefix kept for call-site compatibility; persistence is API-backed.
  */
 export function usePersonalNotes(storageKey, ownerId, idPrefix) {
+  void storageKey;
+  void idPrefix;
+
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -28,14 +33,12 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
     }
     setLoading(true);
     try {
-      const response = await api.get("/api/notes");
-      if (response.data.success) {
-        setNotes(response.data.data.map(toSimpleNote).filter(Boolean));
-      }
+      const list = await notesService.getNotes();
+      setNotes(list.map(toSimpleNote).filter(Boolean));
       setError(null);
     } catch (err) {
       console.error("Failed to fetch notes:", err);
-      setError("Failed to fetch notes.");
+      setError(getErrorMessage(err, "Failed to fetch notes."));
       setNotes([]);
     } finally {
       setLoading(false);
@@ -51,7 +54,7 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
       if (!ownerId) return;
       setLoading(true);
       try {
-        await api.post("/api/notes", {
+        await notesService.createNote({
           title: String(entry.title || "").trim(),
           description: String(entry.description || "").trim(),
           date: entry.date,
@@ -61,11 +64,11 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
         setError(null);
       } catch (err) {
         console.error("Failed to add note:", err);
-        setError(err.response?.data?.message || "Failed to add note.");
+        setError(getErrorMessage(err, "Failed to add note."));
         setLoading(false);
       }
     },
-    [ownerId, fetchNotes]
+    [ownerId, fetchNotes],
   );
 
   const updateNote = useCallback(
@@ -73,7 +76,7 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
       if (!ownerId) return;
       setLoading(true);
       try {
-        await api.put(`/api/notes/${noteId}`, {
+        await notesService.updateNote(noteId, {
           title: entry.title,
           description: entry.description,
           date: entry.date,
@@ -83,11 +86,11 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
         setError(null);
       } catch (err) {
         console.error("Failed to update note:", err);
-        setError(err.response?.data?.message || "Failed to update note.");
+        setError(getErrorMessage(err, "Failed to update note."));
         setLoading(false);
       }
     },
-    [ownerId, fetchNotes]
+    [ownerId, fetchNotes],
   );
 
   const deleteNote = useCallback(
@@ -95,17 +98,25 @@ export function usePersonalNotes(storageKey, ownerId, idPrefix) {
       if (!ownerId) return;
       setLoading(true);
       try {
-        await api.delete(`/api/notes/${noteId}`);
+        await notesService.deleteNote(noteId);
         await fetchNotes();
         setError(null);
       } catch (err) {
         console.error("Failed to delete note:", err);
-        setError(err.response?.data?.message || "Failed to delete note.");
+        setError(getErrorMessage(err, "Failed to delete note."));
         setLoading(false);
       }
     },
-    [ownerId, fetchNotes]
+    [ownerId, fetchNotes],
   );
 
-  return { notes, addNote, updateNote, deleteNote, loading, error, clearError: () => setError(null) };
+  return {
+    notes,
+    addNote,
+    updateNote,
+    deleteNote,
+    loading,
+    error,
+    clearError: () => setError(null),
+  };
 }

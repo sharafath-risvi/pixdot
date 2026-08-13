@@ -14,6 +14,7 @@ export default function StaffLayout() {
   const { logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const hidePending = pathname.startsWith("/staff/reports");
+  const isReports = hidePending;
 
   const handleLogout = () => {
     logout();
@@ -80,7 +81,9 @@ export default function StaffLayout() {
             </div>
           </header>
 
-          <div className={adminStyles.adminOutlet}>
+          <div
+            className={`${adminStyles.adminOutlet} ${isReports ? staffStyles.reportsOutlet : ""}`}
+          >
             {hidePending ? null : <PendingTasksPanel />}
             <Outlet />
           </div>

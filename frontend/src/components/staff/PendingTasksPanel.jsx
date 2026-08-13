@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../lib/api.js";
+import { calendarService } from "../../services/index.js";
 import { toIsoDateString, formatMonthLabel, parseDateKey } from "../../lib/calendar.js";
 import { getStatusColor, getStatusLabel, normalizeStatus } from "../../lib/contentStatus.js";
 import styles from "./PendingTasksPanel.module.css";
@@ -23,8 +23,9 @@ export default function PendingTasksPanel() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/calendar/summary");
-      setData(res.data?.data || null);
+      // Optional endpoint — returns null when backend has not implemented /api/calendar/summary
+      const summary = await calendarService.getSummary();
+      setData(summary);
     } catch {
       setData(null);
     } finally {
