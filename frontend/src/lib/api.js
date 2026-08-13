@@ -3,8 +3,36 @@ import { readJson, writeJson } from "./storage.js";
 
 const AUTH_STORAGE_KEY = "lp_auth_v1";
 
-const envUrl = String(import.meta.env.VITE_API_URL || "").trim();
-const baseURL = envUrl || (import.meta.env.PROD ? "" : "http://localhost:3001");
+/**
+ * Resolve Axios baseURL.
+ *
+ * Production (app.pixdotsolutions.com) uses same-origin "" so requests hit
+ * `/api/...` and nginx proxies to the live backend (see vps-nginx.conf).
+ *
+ * Never bake localhost into a production build — that causes browser
+ * "Network Error" on login when VITE_API_URL=http://localhost:3001 was set at build time.
+ */
+function resolveApiBaseUrl() {
+  const raw = String(
+    import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "",
+  )
+    .trim()
+    .replace(/\/$/, "");
+
+  const isLoopback =
+    !raw ||
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(raw);
+
+  if (import.meta.env.PROD) {
+    if (isLoopback) return "";
+    return raw;
+  }
+
+  if (isLoopback) return "http://localhost:3001";
+  return raw;
+}
+
+const baseURL = resolveApiBaseUrl();
 
 const api = axios.create({
   baseURL,
