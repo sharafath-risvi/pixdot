@@ -15,6 +15,7 @@ import { clientPath, staffClientPath } from "../../lib/adminSlugs.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const CONTENT_TYPE_FILTERS = ["all", "Poster", "Reel", "Shoot", "Creative"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function GlobalCalendar({ basePath = "staff" }) {
   const toast = useToast();
@@ -37,6 +38,9 @@ export default function GlobalCalendar({ basePath = "staff" }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeCell, setActiveCell] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  
+  // New state for Two-Level View
+  const [selectedDateKey, setSelectedDateKey] = useState(null);
 
   const monthParam = monthQueryParam(monthDate);
 
@@ -89,12 +93,21 @@ export default function GlobalCalendar({ basePath = "staff" }) {
     }
     return map;
   }, [contents]);
+  
+  const dailyEventCounts = useMemo(() => {
+    const counts = {};
+    for (const item of contents) {
+      counts[item.dateKey] = (counts[item.dateKey] || 0) + 1;
+    }
+    return counts;
+  }, [contents]);
 
   const filterClientOptions = allClientsForFilter.length ? allClientsForFilter : clients;
 
   const goToday = () => {
     const now = new Date();
     setMonthDate(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDateKey(null);
   };
 
   const openCell = (client, dateRow, editItem = null) => {
@@ -156,19 +169,28 @@ export default function GlobalCalendar({ basePath = "staff" }) {
   };
 
   const todayKey = getDateKey(new Date(), new Date().getDate());
+  
+  // Calculate padding for calendar grid
+  const startDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).getDay();
+  // Adjust so Monday is 0, Sunday is 6
+  const paddingDays = startDay === 0 ? 6 : startDay - 1;
+  const paddingArray = Array.from({ length: paddingDays });
 
   return (
     <section className={adminStyles.adminPageSection}>
       <div className={adminStyles.pageHeading}>
         <h2 className={adminStyles.pageHeadingTitle}>Monthly Schedule</h2>
         <p className={adminStyles.pageHeadingSub}>
-          All-client content calendar — scroll horizontally to compare clients by date
+          Overview of all client content for the selected month
         </p>
       </div>
 
       <div className={styles.toolbar}>
         <div className={styles.toolbarLeft}>
-          <CalendarMonthNav monthDate={monthDate} onMonthDateChange={setMonthDate} />
+          <CalendarMonthNav monthDate={monthDate} onMonthDateChange={(d) => {
+            setMonthDate(d);
+            setSelectedDateKey(null);
+          }} />
           <button type="button" className={styles.todayBtn} onClick={goToday}>
             Today
           </button>
@@ -233,42 +255,97 @@ export default function GlobalCalendar({ basePath = "staff" }) {
         <div className={styles.skeleton}>Loading calendar…</div>
       ) : clients.length === 0 ? (
         <p className={adminStyles.emptyText}>No clients found. Ask admin to add clients.</p>
+      ) : selectedDateKey === null ? (
+        /* LEVEL 1: MONTHLY GRID VIEW */
+        <div className={styles.calendarGrid}>
+          {WEEKDAYS.map((day) => (
+            <div key={day} className={styles.weekdayHeader}>
+              {day}
+            </div>
+          ))}
+          
+          {paddingArray.map((_, i) => (
+            <div key={`pad-${i}`} className={styles.dayCellEmpty} />
+          ))}
+          
+          {dates.map((row) => {
+            const eventCount = dailyEventCounts[row.dateKey] || 0;
+            const isToday = row.dateKey === todayKey;
+            
+            return (
+              <div 
+                key={row.dateKey} 
+                className={`${styles.dayCell} ${isToday ? styles.todayCell : ""}`}
+                onClick={() => setSelectedDateKey(row.dateKey)}
+              >
+                <div className={styles.dayLabel}>
+                  {row.day}
+                </div>
+                {eventCount > 0 && (
+                  <div className={styles.eventIndicator}>
+                    {eventCount} {eventCount === 1 ? "Event" : "Events"}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       ) : (
-        <>
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={`${styles.stickyCol} ${styles.dateCol}`}>DATE</th>
-                  <th className={`${styles.stickyCol2} ${styles.dayCol}`}>DAY</th>
-                  {clients.map((c) => (
-                    <th key={c.id || c._id} className={styles.clientCol}>
-                      <button type="button" className={styles.clientHeadBtn} onClick={() => openClientCalendar(c)}>
-                        {c.name}
-                      </button>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {dates.map((row) => (
-                  <tr key={row.dateKey} className={row.dateKey === todayKey ? styles.todayRow : undefined}>
-                    <td className={`${styles.stickyCol} ${styles.dateCol}`}>{row.label}</td>
-                    <td className={`${styles.stickyCol2} ${styles.dayCol}`}>{row.weekday}</td>
-                    {clients.map((c) => {
-                      const cid = String(c.id || c._id);
-                      const items = contentMap[`${cid}__${row.dateKey}`] || [];
+        /* LEVEL 2: DATE DETAIL VIEW */
+        <div className={styles.detailView}>
+          <div className={styles.detailHeader}>
+            <button 
+              type="button" 
+              className={styles.backBtn}
+              onClick={() => setSelectedDateKey(null)}
+            >
+              ← Back to Monthly Calendar
+            </button>
+            <h3>
+              {dates.find(d => d.dateKey === selectedDateKey)?.label}, {dates.find(d => d.dateKey === selectedDateKey)?.weekday}
+            </h3>
+          </div>
+          
+          <div className={styles.detailList}>
+            {(() => {
+              const row = dates.find(d => d.dateKey === selectedDateKey);
+              if (!row) return null;
+              
+              const clientsWithEvents = clients.filter(c => {
+                const cid = String(c.id || c._id);
+                const items = contentMap[`${cid}__${selectedDateKey}`] || [];
+                return items.length > 0;
+              });
+
+              return (
+                <>
+                  {clientsWithEvents.length === 0 ? (
+                    <p className={styles.emptyState}>No scheduled events for this date based on your filters.</p>
+                  ) : (
+                    clientsWithEvents.map((client) => {
+                      const cid = String(client.id || client._id);
+                      const items = contentMap[`${cid}__${selectedDateKey}`] || [];
+                      
                       return (
-                        <td key={cid} className={styles.cell}>
-                          <div className={styles.cellInner}>
+                        <div key={cid} className={styles.detailClientCard}>
+                          <div className={styles.detailClientHeader}>
+                            <button 
+                              type="button" 
+                              className={styles.detailClientName} 
+                              onClick={() => openClientCalendar(client)}
+                            >
+                              {client.name}
+                            </button>
+                          </div>
+                          <div className={styles.detailItems}>
                             {items.map((item) => (
                               <div key={item.id || item._id} className={styles.chipWrap}>
                                 <button
                                   type="button"
                                   className={styles.chip}
-                                  style={{ background: getStatusColor(item.status) }}
+                                  style={{ background: getStatusColor(item.status), borderColor: getStatusColor(item.status) }}
                                   title={`${item.kind} — ${getStatusLabel(item.status)}. Click to edit.`}
-                                  onClick={() => openCell(c, row, item)}
+                                  onClick={() => openCell(client, row, item)}
                                 >
                                   <strong>{item.kind || item.subtype || "Content"}</strong>
                                   <span>{getStatusLabel(item.status)}</span>
@@ -283,112 +360,16 @@ export default function GlobalCalendar({ basePath = "staff" }) {
                                 </button>
                               </div>
                             ))}
-                            <button
-                              type="button"
-                              className={styles.addCellBtn}
-                              onClick={() => openCell(c, row)}
-                              aria-label={`Add content for ${c.name} on ${row.label}`}
-                            >
-                              +
-                            </button>
                           </div>
-                        </td>
+                        </div>
                       );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className={styles.mobileList}>
-            {dates.map((row) => {
-              const dayBlocks = clients
-                .map((c) => {
-                  const cid = String(c.id || c._id);
-                  return { client: c, items: contentMap[`${cid}__${row.dateKey}`] || [] };
-                })
-                .filter((x) => x.items.length > 0);
-
-              return (
-                <article
-                  key={row.dateKey}
-                  className={`${styles.mobileDay} ${row.dateKey === todayKey ? styles.todayRow : ""}`}
-                >
-                  <header className={styles.mobileDayHead}>
-                    <strong>
-                      {String(row.day).padStart(2, "0")} {row.weekday.slice(0, 3)}
-                    </strong>
-                    <span>{formatMonthLabel(monthDate)}</span>
-                  </header>
-
-                  {dayBlocks.length === 0 ? (
-                    <p className={styles.mobileEmpty}>No scheduled content</p>
-                  ) : (
-                    dayBlocks.map(({ client, items }) => (
-                      <div key={client.id || client._id} className={styles.mobileClientBlock}>
-                        <button
-                          type="button"
-                          className={styles.mobileClientName}
-                          onClick={() => openClientCalendar(client)}
-                        >
-                          {client.name}
-                        </button>
-                        {items.map((item) => (
-                          <div key={item.id || item._id} className={styles.mobileItemRow}>
-                            <button
-                              type="button"
-                              className={styles.mobileItem}
-                              style={{ background: getStatusColor(item.status) }}
-                              onClick={() => openCell(client, row, item)}
-                            >
-                              <span>
-                                <strong>{item.kind}</strong>
-                                {item.subtype ? ` · ${item.subtype}` : ""}
-                              </span>
-                              <StatusBadge status={item.status} />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.chipDelete}
-                              onClick={() =>
-                                setDeleteTarget({ clientId: String(client.id || client._id), item })
-                              }
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ))
+                    })
                   )}
-
-                  <div className={styles.mobileAddRow}>
-                    <select
-                      className={styles.select}
-                      defaultValue=""
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        if (!id) return;
-                        const client = clients.find((c) => String(c.id || c._id) === id);
-                        if (client) openCell(client, row);
-                        e.target.value = "";
-                      }}
-                      aria-label="Add content for client"
-                    >
-                      <option value="">+ Add content…</option>
-                      {clients.map((c) => (
-                        <option key={c.id || c._id} value={c.id || c._id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </article>
+                </>
               );
-            })}
+            })()}
           </div>
-        </>
+        </div>
       )}
 
       <AddContentModal

@@ -3,8 +3,8 @@
 export const CONTENT_STATUS = {
   PENDING: "pending",
   COMPLETED: "completed",
-  TEAM_ISSUES: "team_issues",
-  WAITING_FOR_APPROVAL: "waiting_for_approval",
+  TEAM_ISSUES: "issue",
+  WAITING_FOR_APPROVAL: "waiting_approval",
   APPROVAL_RECEIVED: "approval_received",
 };
 
@@ -70,8 +70,8 @@ export function getStatusClassKey(status) {
   const map = {
     pending: "dayPending",
     completed: "dayCompleted",
-    team_issues: "dayTeamIssues",
-    waiting_for_approval: "dayWaitingApproval",
+    issue: "dayTeamIssues",
+    waiting_approval: "dayWaitingApproval",
     approval_received: "dayApprovalReceived",
   };
   return map[s] || "dayPending";
