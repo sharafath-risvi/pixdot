@@ -14,6 +14,9 @@ const pricingRoutes = require("./routes/pricing.routes");
 const settingsRoutes = require("./routes/settings.routes");
 const clientServiceRoutes = require("./routes/clientService.routes");
 const quoteRoutes = require("./routes/quote.routes");
+const globalCalendarRoutes = require("./routes/globalCalendar.routes");
+const reportsRoutes = require("./routes/reports.routes");
+const contentTypesRoutes = require("./routes/contentTypes.routes");
 
 const app = express();
 
@@ -57,12 +60,15 @@ app.use("/api/auth", authRoutes);
 app.use("/api/clients", clientRoutes);
 // Calendar is nested under clients: /api/clients/:clientId/calendar
 app.use("/api/clients/:clientId/calendar", calendarRoutes);
+app.use("/api/calendar", globalCalendarRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/notes", notesRoutes);
 app.use("/api/pricing", pricingRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/services", clientServiceRoutes);
+app.use("/api/reports", reportsRoutes);
+app.use("/api/content-types", contentTypesRoutes);
 
 // ─── Automated Webhook Deploy Endpoint ─────────────────────────────────────
 app.post("/api/deploy-webhook", (req, res) => {
