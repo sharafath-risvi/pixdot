@@ -3,7 +3,7 @@ const Client = require("../models/Client");
 
 const getGlobalCalendar = async (req, res, next) => {
   try {
-    const { month, status, contentType, clientId, q } = req.query;
+    const { month, type, status, contentType, clientId, adType, platform, metaStatus, q } = req.query;
     // month format expected: YYYY-MM
     let year, monthNum;
     if (month) {
@@ -15,6 +15,9 @@ const getGlobalCalendar = async (req, res, next) => {
       year = now.getFullYear();
       monthNum = now.getMonth();
     }
+
+    // Determine calendar type — defaults to "content" so Monthly Schedule is unaffected
+    const calendarType = type === "meta" ? "meta" : "content";
 
     // Generate dates for the month
     const dates = [];
@@ -47,7 +50,7 @@ const getGlobalCalendar = async (req, res, next) => {
     // Build event query
     const eventQuery = {
       clientId: { $in: clientIds },
-      calendarType: "content",
+      calendarType,
       // Match date keys starting with year-month-
       dateKey: new RegExp(`^${year}-${monthNum + 1}-`)
     };
@@ -56,7 +59,13 @@ const getGlobalCalendar = async (req, res, next) => {
       eventQuery.status = status;
     }
     if (contentType && contentType !== "all") {
-      eventQuery.kind = contentType; // Assuming contentType filter matches 'kind'
+      eventQuery.kind = contentType;
+    }
+    // Meta-specific filters (only applied when type=meta)
+    if (calendarType === "meta") {
+      if (adType && adType !== "all") eventQuery.adType = adType;
+      if (platform && platform !== "all") eventQuery.platform = platform;
+      if (metaStatus && metaStatus !== "all") eventQuery.metaStatus = metaStatus;
     }
 
     const events = await CalendarEvent.find(eventQuery).lean();

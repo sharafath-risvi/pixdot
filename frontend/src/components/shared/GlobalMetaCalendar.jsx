@@ -17,21 +17,16 @@ import { formatMonthLabel, getDateKey, monthQueryParam } from "../../lib/calenda
 import { clientPath, staffClientPath } from "../../lib/adminSlugs.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
-const legacyFormatMap = {
-  Facebook: "Poster",
-  Instagram: "Reels",
-};
-
-function normalizeFormat(value) {
-  if (!value) return value;
-  return legacyFormatMap[value] || value;
-}
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function GlobalMetaCalendar({ basePath = "staff" }) {
   const toast = useToast();
   const navigate = useNavigate();
   const { role } = useAuth();
-  const [monthDate, setMonthDate] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+
+  const [monthDate, setMonthDate] = useState(
+    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [clients, setClients] = useState([]);
@@ -39,23 +34,21 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
   const [contents, setContents] = useState([]);
   const [allClientsForFilter, setAllClientsForFilter] = useState([]);
 
+  // Filters
   const [clientFilter, setClientFilter] = useState("all");
   const [adTypeFilter, setAdTypeFilter] = useState("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const [searchDebounced, setSearchDebounced] = useState("");
 
+  // Two-level view
+  const [selectedDateKey, setSelectedDateKey] = useState(null);
+
+  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [activeCell, setActiveCell] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const monthParam = monthQueryParam(monthDate);
-
-  useEffect(() => {
-    const t = setTimeout(() => setSearchDebounced(search.trim()), 250);
-    return () => clearTimeout(t);
-  }, [search]);
 
   const fetchGlobal = useCallback(async () => {
     setLoading(true);
@@ -69,30 +62,40 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
           platform: platformFilter !== "all" ? platformFilter : undefined,
           metaStatus: statusFilter !== "all" ? statusFilter : undefined,
           clientId: clientFilter !== "all" ? clientFilter : undefined,
-          q: searchDebounced || undefined,
         },
       });
       const data = res.data?.data || {};
       setClients(data.clients || []);
       setDates(data.dates || []);
       setContents(data.contents || []);
-      if (!searchDebounced && clientFilter === "all") {
+      if (clientFilter === "all") {
         setAllClientsForFilter(data.clients || []);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to load Meta ads schedule.");
+      setError(err.response?.data?.message || "Failed to load Meta Ads schedule.");
       setClients([]);
       setDates([]);
       setContents([]);
     } finally {
       setLoading(false);
     }
-  }, [monthParam, adTypeFilter, platformFilter, statusFilter, clientFilter, searchDebounced]);
+  }, [monthParam, adTypeFilter, platformFilter, statusFilter, clientFilter]);
 
   useEffect(() => {
     fetchGlobal();
   }, [fetchGlobal]);
 
+  // Map: dateKey → all items on that date
+  const dailyContents = useMemo(() => {
+    const map = {};
+    for (const item of contents) {
+      if (!map[item.dateKey]) map[item.dateKey] = [];
+      map[item.dateKey].push(item);
+    }
+    return map;
+  }, [contents]);
+
+  // Map: "clientId__dateKey" → items for that client+date
   const contentMap = useMemo(() => {
     const map = {};
     for (const item of contents) {
@@ -109,14 +112,16 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
   const goToday = () => {
     const now = new Date();
     setMonthDate(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDateKey(null);
   };
 
-  const openCell = (client, dateRow, editItem = null) => {
+  const openCell = (client, dateKey, editItem = null) => {
+    const row = dates.find((d) => d.dateKey === dateKey);
     setActiveCell({
       clientId: client.id || client._id,
       clientName: client.name,
-      dateKey: dateRow.dateKey,
-      dayLabel: `${dateRow.label} ${dateRow.weekday.slice(0, 3)} · ${client.name}`,
+      dateKey,
+      dayLabel: `${row?.label ?? dateKey} · ${client.name}`,
       editItem,
     });
     setModalOpen(true);
@@ -129,7 +134,7 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
       if (activeCell.editItem) {
         await api.put(
           `/api/clients/${clientId}/calendar/meta/${activeCell.editItem.id || activeCell.editItem._id}`,
-          { ...payload, dateKey: activeCell.dateKey },
+          { ...payload, dateKey: activeCell.dateKey }
         );
         toast.success("Campaign updated.");
       } else {
@@ -151,7 +156,7 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
     if (!deleteTarget) return;
     try {
       await api.delete(
-        `/api/clients/${deleteTarget.clientId}/calendar/meta/${deleteTarget.item.id || deleteTarget.item._id}`,
+        `/api/clients/${deleteTarget.clientId}/calendar/meta/${deleteTarget.item.id || deleteTarget.item._id}`
       );
       toast.success("Deleted.");
       setDeleteTarget(null);
@@ -171,31 +176,37 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
 
   const todayKey = getDateKey(new Date(), new Date().getDate());
 
+  // Calendar grid padding: Mon-start
+  const startDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).getDay();
+  const paddingDays = startDay === 0 ? 6 : startDay - 1;
+  const paddingArray = Array.from({ length: paddingDays });
+
+  const selectedRow = dates.find((d) => d.dateKey === selectedDateKey);
+
   return (
     <section className={adminStyles.adminPageSection}>
       <div className={adminStyles.pageHeading}>
         <h2 className={adminStyles.pageHeadingTitle}>Meta Ads Schedule</h2>
         <p className={adminStyles.pageHeadingSub}>
-          All-client Meta ads planner — compare campaigns by date across clients
+          Overview of all client Meta Ad campaigns for the selected month
         </p>
       </div>
 
+      {/* Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.toolbarLeft}>
-          <CalendarMonthNav monthDate={monthDate} onMonthDateChange={setMonthDate} />
+          <CalendarMonthNav
+            monthDate={monthDate}
+            onMonthDateChange={(d) => {
+              setMonthDate(d);
+              setSelectedDateKey(null);
+            }}
+          />
           <button type="button" className={styles.todayBtn} onClick={goToday}>
             Today
           </button>
         </div>
         <div className={styles.filters}>
-          <input
-            className={styles.search}
-            type="search"
-            placeholder="Search client"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search client"
-          />
           <select
             className={styles.select}
             value={clientFilter}
@@ -228,7 +239,7 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
             onChange={(e) => setPlatformFilter(e.target.value)}
             aria-label="Filter format"
           >
-            <option value="all">All formats</option>
+            <option value="all">All Formats</option>
             {metaFormatOptions.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -241,7 +252,7 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter status"
           >
-            <option value="all">All Status</option>
+            <option value="all">All Statuses</option>
             {statusOptions.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -251,11 +262,15 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
         </div>
       </div>
 
+      {/* Status legend */}
       <div className={styles.legendWrap}>
         <div className={styles.metaLegend} aria-label="Meta status legend">
           {statusOptions.map((o) => (
             <span key={o.value} className={styles.metaLegendItem}>
-              <span className={styles.metaLegendSwatch} style={{ background: metaStatusColor(o.value) }} />
+              <span
+                className={styles.metaLegendSwatch}
+                style={{ background: metaStatusColor(o.value) }}
+              />
               {o.label}
             </span>
           ))}
@@ -265,165 +280,229 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
       {error ? <p className={adminStyles.errorText}>{error}</p> : null}
 
       {loading ? (
-        <div className={styles.skeleton}>Loading Meta ads schedule…</div>
-      ) : clients.length === 0 ? (
-        <p className={adminStyles.emptyText}>No clients found. Ask admin to add clients.</p>
-      ) : (
-        <>
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={`${styles.stickyCol} ${styles.dateCol}`}>DATE</th>
-                  <th className={`${styles.stickyCol2} ${styles.dayCol}`}>DAY</th>
-                  {clients.map((c) => (
-                    <th key={c.id || c._id} className={styles.clientCol}>
-                      <button type="button" className={styles.clientHeadBtn} onClick={() => openClientMeta(c)}>
-                        {c.name}
-                      </button>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {dates.map((row) => (
-                  <tr key={row.dateKey} className={row.dateKey === todayKey ? styles.todayRow : undefined}>
-                    <td className={`${styles.stickyCol} ${styles.dateCol}`}>{row.label}</td>
-                    <td className={`${styles.stickyCol2} ${styles.dayCol}`}>{row.weekday}</td>
-                    {clients.map((c) => {
-                      const cid = String(c.id || c._id);
-                      const items = contentMap[`${cid}__${row.dateKey}`] || [];
-                      return (
-                        <td key={cid} className={styles.cell}>
-                          <div className={styles.cellInner}>
-                            {items.map((item) => (
-                              <div key={item.id || item._id} className={styles.chipWrap}>
-                                <button
-                                  type="button"
-                                  className={styles.chip}
-                                  style={{ background: metaStatusColor(item.metaStatus) }}
-                                  title={`${item.adType} — ${item.campaignName || "Campaign"}. Click to edit.`}
-                                  onClick={() => openCell(c, row, item)}
-                                >
-                                  <strong>{item.adType || "Campaign"}</strong>
-                                  <span>{item.campaignName || normalizeFormat(item.platform) || item.metaStatus}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className={styles.chipDelete}
-                                  aria-label="Delete"
-                                  onClick={() => setDeleteTarget({ clientId: cid, item })}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            ))}
-                            <button
-                              type="button"
-                              className={styles.addCellBtn}
-                              onClick={() => openCell(c, row)}
-                              aria-label={`Add Meta ad for ${c.name} on ${row.label}`}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className={styles.skeleton}>Loading Meta Ads schedule…</div>
+      ) : selectedDateKey === null ? (
+        /* ─── LEVEL 1: MONTHLY GRID VIEW ─────────────────────────────── */
+        <div className={styles.calendarGrid}>
+          {WEEKDAYS.map((day) => (
+            <div key={day} className={styles.weekdayHeader}>
+              {day}
+            </div>
+          ))}
 
-          <div className={styles.mobileList}>
-            {dates.map((row) => {
-              const dayBlocks = clients
-                .map((c) => {
-                  const cid = String(c.id || c._id);
-                  return { client: c, items: contentMap[`${cid}__${row.dateKey}`] || [] };
-                })
-                .filter((x) => x.items.length > 0);
+          {paddingArray.map((_, i) => (
+            <div key={`pad-${i}`} className={styles.dayCellEmpty} />
+          ))}
 
-              return (
-                <article
-                  key={row.dateKey}
-                  className={`${styles.mobileDay} ${row.dateKey === todayKey ? styles.todayRow : ""}`}
-                >
-                  <header className={styles.mobileDayHead}>
-                    <strong>
-                      {String(row.day).padStart(2, "0")} {row.weekday.slice(0, 3)}
-                    </strong>
-                    <span>{formatMonthLabel(monthDate)}</span>
-                  </header>
+          {dates.map((row) => {
+            const dayItems = dailyContents[row.dateKey] || [];
+            const isToday = row.dateKey === todayKey;
+            // Gather distinct statuses present on this day for colored dots
+            const statuses = [...new Set(dayItems.map((i) => i.metaStatus).filter(Boolean))];
 
-                  {dayBlocks.length === 0 ? (
-                    <p className={styles.mobileEmpty}>No scheduled Meta ads</p>
-                  ) : (
-                    dayBlocks.map(({ client, items }) => (
-                      <div key={client.id || client._id} className={styles.mobileClientBlock}>
-                        <button
-                          type="button"
-                          className={styles.mobileClientName}
-                          onClick={() => openClientMeta(client)}
-                        >
-                          {client.name}
-                        </button>
-                        {items.map((item) => (
-                          <div key={item.id || item._id} className={styles.mobileItemRow}>
-                            <button
-                              type="button"
-                              className={styles.mobileItem}
-                              style={{ background: metaStatusColor(item.metaStatus) }}
-                              onClick={() => openCell(client, row, item)}
-                            >
-                              <span>
-                                <strong>{item.adType}</strong>
-                                {item.campaignName ? ` · ${item.campaignName}` : ""}
-                              </span>
-                              <span>{item.metaStatus || "—"}</span>
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.chipDelete}
-                              onClick={() =>
-                                setDeleteTarget({ clientId: String(client.id || client._id), item })
-                              }
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ))
-                  )}
-
-                  <div className={styles.mobileAddRow}>
-                    <select
-                      className={styles.select}
-                      defaultValue=""
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        if (!id) return;
-                        const client = clients.find((c) => String(c.id || c._id) === id);
-                        if (client) openCell(client, row);
-                        e.target.value = "";
-                      }}
-                      aria-label="Add Meta ad for client"
-                    >
-                      <option value="">+ Add Meta ad…</option>
-                      {clients.map((c) => (
-                        <option key={c.id || c._id} value={c.id || c._id}>
-                          {c.name}
-                        </option>
+            return (
+              <div
+                key={row.dateKey}
+                className={`${styles.dayCell} ${isToday ? styles.todayCell : ""}`}
+                onClick={() => setSelectedDateKey(row.dateKey)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") setSelectedDateKey(row.dateKey);
+                }}
+                aria-label={`${row.label} — ${dayItems.length} campaign${dayItems.length !== 1 ? "s" : ""}`}
+              >
+                <div className={styles.dayLabel}>{row.day}</div>
+                {dayItems.length > 0 && (
+                  <>
+                    <div className={styles.eventIndicator}>
+                      {dayItems.length} Campaign{dayItems.length !== 1 ? "s" : ""}
+                    </div>
+                    <div className={metaDotsClass}>
+                      {statuses.map((s) => (
+                        <span
+                          key={s}
+                          style={{
+                            display: "inline-block",
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            background: metaStatusColor(s),
+                            border: "1px solid rgba(0,0,0,0.12)",
+                            marginRight: 3,
+                          }}
+                          title={s}
+                        />
                       ))}
-                    </select>
-                  </div>
-                </article>
-              );
-            })}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* ─── LEVEL 2: DATE DETAIL VIEW ──────────────────────────────── */
+        <div className={styles.detailView}>
+          <div className={styles.detailHeader}>
+            <button
+              type="button"
+              className={styles.backBtn}
+              onClick={() => setSelectedDateKey(null)}
+            >
+              ← Back to Monthly Calendar
+            </button>
+            <h3>
+              {selectedRow?.label}, {selectedRow?.weekday}
+            </h3>
           </div>
-        </>
+
+          <div className={styles.detailList}>
+            {clients.length === 0 ? (
+              <p className={styles.emptyState}>No clients found.</p>
+            ) : (
+              (() => {
+                const clientsWithItems = clients.filter((c) => {
+                  const cid = String(c.id || c._id);
+                  return (contentMap[`${cid}__${selectedDateKey}`] || []).length > 0;
+                });
+
+                return (
+                  <>
+                    {clientsWithItems.length === 0 ? (
+                      <p className={styles.emptyState}>
+                        No Meta Ad campaigns scheduled for this date.
+                      </p>
+                    ) : (
+                      clientsWithItems.map((client) => {
+                        const cid = String(client.id || client._id);
+                        const items = contentMap[`${cid}__${selectedDateKey}`] || [];
+                        return (
+                          <div key={cid} className={styles.detailClientCard}>
+                            <div className={styles.detailClientHeader}>
+                              <button
+                                type="button"
+                                className={styles.detailClientName}
+                                onClick={() => openClientMeta(client)}
+                              >
+                                {client.name}
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.addCellBtn}
+                                title={`Add campaign for ${client.name}`}
+                                onClick={() => openCell(client, selectedDateKey)}
+                                aria-label={`Add campaign for ${client.name}`}
+                              >
+                                +
+                              </button>
+                            </div>
+                            <div className={styles.detailItems}>
+                              {items.map((item) => (
+                                <div
+                                  key={item.id || item._id}
+                                  className={styles.chipWrap}
+                                >
+                                  <button
+                                    type="button"
+                                    className={styles.chip}
+                                    style={{
+                                      background: metaStatusColor(item.metaStatus),
+                                      borderColor: "rgba(0,0,0,0.08)",
+                                    }}
+                                    onClick={() => openCell(client, selectedDateKey, item)}
+                                    title={`${item.adType} — ${item.campaignName}. Click to edit.`}
+                                  >
+                                    <strong>{item.adType || "Campaign"}</strong>
+                                    {item.campaignName && (
+                                      <span>{item.campaignName}</span>
+                                    )}
+                                    {item.platform && (
+                                      <span style={{ opacity: 0.7 }}>{item.platform}</span>
+                                    )}
+                                    {item.budgetAmount && (
+                                      <span style={{ opacity: 0.7 }}>
+                                        {item.budgetType}: {item.budgetAmount}
+                                      </span>
+                                    )}
+                                    <span
+                                      style={{
+                                        marginTop: 4,
+                                        fontWeight: 600,
+                                        fontSize: 11,
+                                        textTransform: "capitalize",
+                                      }}
+                                    >
+                                      {item.metaStatus || "—"}
+                                    </span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={styles.chipDelete}
+                                    aria-label="Delete campaign"
+                                    onClick={() =>
+                                      setDeleteTarget({ clientId: cid, item })
+                                    }
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+
+                    {/* Allow adding to clients that have no entry yet */}
+                    {clients.filter((c) => {
+                      const cid = String(c.id || c._id);
+                      return (contentMap[`${cid}__${selectedDateKey}`] || []).length === 0;
+                    }).length > 0 && (
+                      <div className={styles.detailClientCard}>
+                        <div className={styles.detailClientHeader}>
+                          <span className={styles.detailClientName} style={{ cursor: "default", color: "var(--dash-muted,#656575)" }}>
+                            Add campaign for another client
+                          </span>
+                        </div>
+                        <div style={{ paddingTop: 4 }}>
+                          <select
+                            className={styles.select}
+                            defaultValue=""
+                            onChange={(e) => {
+                              const id = e.target.value;
+                              if (!id) return;
+                              const client = clients.find(
+                                (c) => String(c.id || c._id) === id
+                              );
+                              if (client) openCell(client, selectedDateKey);
+                              e.target.value = "";
+                            }}
+                            aria-label="Select client to add campaign"
+                          >
+                            <option value="">Select client…</option>
+                            {clients
+                              .filter((c) => {
+                                const cid = String(c.id || c._id);
+                                return (
+                                  (contentMap[`${cid}__${selectedDateKey}`] || []).length === 0
+                                );
+                              })
+                              .map((c) => (
+                                <option key={c.id || c._id} value={c.id || c._id}>
+                                  {c.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()
+            )}
+          </div>
+        </div>
       )}
 
       <MetaAdsFormModal
@@ -441,7 +520,7 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
       <ConfirmModal
         open={Boolean(deleteTarget)}
         title="Delete campaign?"
-        message="This will permanently remove the Meta ads campaign."
+        message="This will permanently remove the Meta Ads campaign."
         confirmText="Delete"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -449,3 +528,6 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
     </section>
   );
 }
+
+// Inline style helper — dots row below the campaign count badge
+const metaDotsClass = { display: "flex", flexWrap: "wrap", gap: 2, marginTop: 4 };

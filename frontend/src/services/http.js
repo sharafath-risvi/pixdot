@@ -29,7 +29,7 @@ export function getErrorMessage(err, fallback = "Something went wrong. Please tr
   const status = err?.response?.status;
   const apiMsg = err?.response?.data?.message;
 
-  if (status === 401) return "Session expired. Please sign in again.";
+  if (status === 401) return apiMsg || "Session expired. Please sign in again.";
   if (status === 403) return "You do not have permission for this action.";
   if (status === 404) return apiMsg || "Not found.";
   if (status === 409) return apiMsg || "Conflict — this record already exists.";

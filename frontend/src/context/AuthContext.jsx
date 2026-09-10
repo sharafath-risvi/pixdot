@@ -65,7 +65,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (payload) => {
-    setAuth({
+    const newAuth = {
       isAuthenticated: true,
       role: payload.role,
       staffUsername: payload.role === "staff" ? payload.staffUsername : null,
@@ -75,7 +75,9 @@ export function AuthProvider({ children }) {
       token: payload.token || null,
       staffRole: payload.role === "staff" && payload.staffRole ? String(payload.staffRole) : null,
       staffName: payload.role === "staff" && payload.staffName ? String(payload.staffName) : null,
-    });
+    };
+    setAuth(newAuth);
+    writeJson(STORAGE_KEY, newAuth);
   };
 
   const logout = () => {

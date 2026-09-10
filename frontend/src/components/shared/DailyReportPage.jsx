@@ -152,7 +152,6 @@ export default function DailyReportPage({ mode = "staff" }) {
         status: form.status,
         contentType: form.contentType,
         additionalNotes: form.additionalNotes.trim(),
-        date: todayIso,
       });
       toast.success("Daily report submitted successfully.");
       setForm({
