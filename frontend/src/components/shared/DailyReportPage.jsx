@@ -13,6 +13,7 @@ import { formatDisplayDate, formatStaffRole } from "../../lib/staffRole.js";
 import StatusBadge from "./StatusBadge.jsx";
 import adminStyles from "../admin/Admin.module.css";
 import styles from "./DailyReport.module.css";
+import ConfirmModal from "../admin/ConfirmModal.jsx";
 
 export default function DailyReportPage({ mode = "staff" }) {
   const toast = useToast();
@@ -42,6 +43,8 @@ export default function DailyReportPage({ mode = "staff" }) {
   const [loading, setLoading] = useState(true);
   const [dayData, setDayData] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [editingReportId, setEditingReportId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [clientOpen, setClientOpen] = useState(false);
   const [clientSearch, setClientSearch] = useState("");
@@ -142,28 +145,66 @@ export default function DailyReportPage({ mode = "staff" }) {
     return Object.keys(next).length === 0;
   };
 
+  const openEdit = (report) => {
+    const cid = report.clientId?._id || report.clientId?.id || report.clientId || "";
+    setForm({
+      clientId: cid,
+      status: report.status || "pending",
+      contentType: report.contentType || "",
+      additionalNotes: report.additionalNotes || report.notes || "",
+    });
+    setEditingReportId(report.id || report._id);
+    setSelectedReport(null);
+    if (!isAdmin) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await api.delete(`/api/reports/${deleteTarget._id || deleteTarget.id}`);
+      toast.success("Report deleted.");
+      setDeleteTarget(null);
+      loadDay();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not delete report.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate() || submitting) return;
     setSubmitting(true);
     try {
-      await api.post("/api/reports", {
-        clientId: form.clientId,
-        status: form.status,
-        contentType: form.contentType,
-        additionalNotes: form.additionalNotes.trim(),
-      });
-      toast.success("Daily report submitted successfully.");
+      if (editingReportId) {
+        await api.put(`/api/reports/${editingReportId}`, {
+          clientId: form.clientId,
+          status: form.status,
+          contentType: form.contentType,
+          additionalNotes: form.additionalNotes.trim(),
+        });
+        toast.success("Daily report updated successfully.");
+      } else {
+        await api.post("/api/reports", {
+          clientId: form.clientId,
+          status: form.status,
+          contentType: form.contentType,
+          additionalNotes: form.additionalNotes.trim(),
+        });
+        toast.success("Daily report submitted successfully.");
+      }
       setForm({
         clientId: "",
         status: "pending",
         contentType: "",
         additionalNotes: "",
       });
+      setEditingReportId(null);
       setErrors({});
       loadDay();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to submit report.");
+      toast.error(err.response?.data?.message || "Failed to save report.");
     } finally {
       setSubmitting(false);
     }
@@ -267,9 +308,9 @@ export default function DailyReportPage({ mode = "staff" }) {
         </div>
       </div>
 
-      {!isAdmin ? (
+      {(!isAdmin || editingReportId) ? (
         <form className={styles.formCard} onSubmit={handleSubmit} noValidate>
-          <h3>Submit Daily Report</h3>
+          <h3>{editingReportId ? "Edit Daily Report" : "Submit Daily Report"}</h3>
 
           <div className={styles.formGrid}>
             <label className={styles.field}>
@@ -462,13 +503,28 @@ export default function DailyReportPage({ mode = "staff" }) {
             </label>
           </div>
 
-          <button
-            type="submit"
-            className={`${adminStyles.buttonPrimary} ${styles.submitBtn}`}
-            disabled={submitting}
-          >
-            {submitting ? "Submitting…" : "Submit Daily Report"}
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              type="submit"
+              className={`${adminStyles.buttonPrimary} ${styles.submitBtn}`}
+              disabled={submitting}
+            >
+              {submitting ? "Saving…" : editingReportId ? "Save Changes" : "Submit Daily Report"}
+            </button>
+            {editingReportId && (
+              <button
+                type="button"
+                className={adminStyles.buttonGhost}
+                onClick={() => {
+                  setEditingReportId(null);
+                  setForm({ clientId: "", status: "pending", contentType: "", additionalNotes: "" });
+                  setErrors({});
+                }}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       ) : null}
 
@@ -515,9 +571,22 @@ export default function DailyReportPage({ mode = "staff" }) {
                         </td>
                         <td>
                           {r ? (
-                            <button type="button" className={styles.linkBtn} onClick={() => setSelectedReport(r)}>
-                              View
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <button type="button" className={styles.linkBtn} onClick={() => setSelectedReport(r)}>
+                                View
+                              </button>
+                              <button type="button" className={styles.linkBtn} onClick={() => openEdit(r)}>
+                                Edit
+                              </button>
+                              <button 
+                                type="button" 
+                                className={styles.linkBtn} 
+                                style={{ color: '#be123c' }} 
+                                onClick={() => setDeleteTarget(r)}
+                              >
+                                Delete
+                              </button>
+                            </div>
                           ) : (
                             "—"
                           )}
@@ -549,9 +618,22 @@ export default function DailyReportPage({ mode = "staff" }) {
                           <span>·</span>
                           <span>{r.contentType || "—"}</span>
                         </p>
-                        <button type="button" className={styles.linkBtn} onClick={() => setSelectedReport(r)}>
-                          View report
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                          <button type="button" className={styles.linkBtn} onClick={() => setSelectedReport(r)}>
+                            View report
+                          </button>
+                          <button type="button" className={styles.linkBtn} onClick={() => openEdit(r)}>
+                            Edit
+                          </button>
+                          <button 
+                            type="button" 
+                            className={styles.linkBtn} 
+                            style={{ color: '#be123c' }} 
+                            onClick={() => setDeleteTarget(r)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </>
                     ) : null}
                   </article>
@@ -635,9 +717,14 @@ export default function DailyReportPage({ mode = "staff" }) {
               </div>
             </div>
             <div className={adminStyles.modalActions}>
-              <button type="button" className={adminStyles.buttonPrimary} onClick={() => setSelectedReport(null)}>
+              <button type="button" className={adminStyles.buttonGhost} onClick={() => setSelectedReport(null)}>
                 Close
               </button>
+              {(!isAdmin || (isAdmin && true)) && (
+                <button type="button" className={adminStyles.buttonPrimary} onClick={() => openEdit(selectedReport)}>
+                  Edit Report
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -707,6 +794,15 @@ export default function DailyReportPage({ mode = "staff" }) {
           </div>
         </div>
       ) : null}
+
+      <ConfirmModal
+        open={Boolean(deleteTarget)}
+        title="Delete Daily Report?"
+        message="This will permanently delete the report. This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </section>
   );
 }

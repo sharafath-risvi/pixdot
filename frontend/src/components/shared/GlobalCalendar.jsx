@@ -330,15 +330,17 @@ export default function GlobalCalendar({ basePath = "staff" }) {
                             >
                               {client.name}
                             </button>
-                            <button
-                              type="button"
-                              className={styles.addCellBtn}
-                              title={`Add event for ${client.name}`}
-                              onClick={() => openCell(client, row)}
-                              aria-label={`Add event for ${client.name}`}
-                            >
-                              +
-                            </button>
+                            {items.length === 0 && (
+                              <button
+                                type="button"
+                                className={styles.addCellBtn}
+                                title={`Add event for ${client.name}`}
+                                onClick={() => openCell(client, row)}
+                                aria-label={`Add event for ${client.name}`}
+                              >
+                                +
+                              </button>
+                            )}
                           </div>
                           <div className={styles.detailItems}>
                             {items.length === 0 ? (

@@ -377,15 +377,17 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
                             >
                               {client.name}
                             </button>
-                            <button
-                              type="button"
-                              className={styles.addCellBtn}
-                              title={`Add campaign for ${client.name}`}
-                              onClick={() => openCell(client, selectedDateKey)}
-                              aria-label={`Add campaign for ${client.name}`}
-                            >
-                              +
-                            </button>
+                            {items.length === 0 && (
+                              <button
+                                type="button"
+                                className={styles.addCellBtn}
+                                title={`Add campaign for ${client.name}`}
+                                onClick={() => openCell(client, selectedDateKey)}
+                                aria-label={`Add campaign for ${client.name}`}
+                              >
+                                +
+                              </button>
+                            )}
                           </div>
                           <div className={styles.detailItems}>
                             {items.length === 0 ? (
