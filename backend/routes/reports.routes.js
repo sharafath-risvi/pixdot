@@ -5,5 +5,7 @@ const { protect } = require("../middleware/auth");
 
 router.get("/date/:date", protect, reportsController.getReportsByDate);
 router.post("/", protect, reportsController.createReport);
+router.put("/:id", protect, reportsController.updateReport);
+router.delete("/:id", protect, reportsController.deleteReport);
 
 module.exports = router;
