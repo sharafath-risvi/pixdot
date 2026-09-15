@@ -311,18 +311,12 @@ export default function GlobalCalendar({ basePath = "staff" }) {
               const row = dates.find(d => d.dateKey === selectedDateKey);
               if (!row) return null;
               
-              const clientsWithEvents = clients.filter(c => {
-                const cid = String(c.id || c._id);
-                const items = contentMap[`${cid}__${selectedDateKey}`] || [];
-                return items.length > 0;
-              });
-
               return (
                 <>
-                  {clientsWithEvents.length === 0 ? (
-                    <p className={styles.emptyState}>No scheduled events for this date based on your filters.</p>
+                  {clients.length === 0 ? (
+                    <p className={styles.emptyState}>No clients found.</p>
                   ) : (
-                    clientsWithEvents.map((client) => {
+                    clients.map((client) => {
                       const cid = String(client.id || client._id);
                       const items = contentMap[`${cid}__${selectedDateKey}`] || [];
                       
@@ -336,30 +330,43 @@ export default function GlobalCalendar({ basePath = "staff" }) {
                             >
                               {client.name}
                             </button>
+                            <button
+                              type="button"
+                              className={styles.addCellBtn}
+                              title={`Add event for ${client.name}`}
+                              onClick={() => openCell(client, row)}
+                              aria-label={`Add event for ${client.name}`}
+                            >
+                              +
+                            </button>
                           </div>
                           <div className={styles.detailItems}>
-                            {items.map((item) => (
-                              <div key={item.id || item._id} className={styles.chipWrap}>
-                                <button
-                                  type="button"
-                                  className={styles.chip}
-                                  style={{ background: getStatusColor(item.status), borderColor: getStatusColor(item.status) }}
-                                  title={`${item.kind} — ${getStatusLabel(item.status)}. Click to edit.`}
-                                  onClick={() => openCell(client, row, item)}
-                                >
-                                  <strong>{item.kind || item.subtype || "Content"}</strong>
-                                  <span>{getStatusLabel(item.status)}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className={styles.chipDelete}
-                                  aria-label="Delete"
-                                  onClick={() => setDeleteTarget({ clientId: cid, item })}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            ))}
+                            {items.length === 0 ? (
+                              <p className={styles.emptyState} style={{ margin: 0 }}>No event</p>
+                            ) : (
+                              items.map((item) => (
+                                <div key={item.id || item._id} className={styles.chipWrap}>
+                                  <button
+                                    type="button"
+                                    className={styles.chip}
+                                    style={{ background: getStatusColor(item.status), borderColor: getStatusColor(item.status) }}
+                                    title={`${item.kind} — ${getStatusLabel(item.status)}. Click to edit.`}
+                                    onClick={() => openCell(client, row, item)}
+                                  >
+                                    <strong>{item.kind || item.subtype || "Content"}</strong>
+                                    <span>{getStatusLabel(item.status)}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={styles.chipDelete}
+                                    aria-label="Delete"
+                                    onClick={() => setDeleteTarget({ clientId: cid, item })}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))
+                            )}
                           </div>
                         </div>
                       );

@@ -362,43 +362,36 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
               <p className={styles.emptyState}>No clients found.</p>
             ) : (
               (() => {
-                const clientsWithItems = clients.filter((c) => {
-                  const cid = String(c.id || c._id);
-                  return (contentMap[`${cid}__${selectedDateKey}`] || []).length > 0;
-                });
-
                 return (
                   <>
-                    {clientsWithItems.length === 0 ? (
-                      <p className={styles.emptyState}>
-                        No Meta Ad campaigns scheduled for this date.
-                      </p>
-                    ) : (
-                      clientsWithItems.map((client) => {
-                        const cid = String(client.id || client._id);
-                        const items = contentMap[`${cid}__${selectedDateKey}`] || [];
-                        return (
-                          <div key={cid} className={styles.detailClientCard}>
-                            <div className={styles.detailClientHeader}>
-                              <button
-                                type="button"
-                                className={styles.detailClientName}
-                                onClick={() => openClientMeta(client)}
-                              >
-                                {client.name}
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.addCellBtn}
-                                title={`Add campaign for ${client.name}`}
-                                onClick={() => openCell(client, selectedDateKey)}
-                                aria-label={`Add campaign for ${client.name}`}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <div className={styles.detailItems}>
-                              {items.map((item) => (
+                    {clients.map((client) => {
+                      const cid = String(client.id || client._id);
+                      const items = contentMap[`${cid}__${selectedDateKey}`] || [];
+                      return (
+                        <div key={cid} className={styles.detailClientCard}>
+                          <div className={styles.detailClientHeader}>
+                            <button
+                              type="button"
+                              className={styles.detailClientName}
+                              onClick={() => openClientMeta(client)}
+                            >
+                              {client.name}
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.addCellBtn}
+                              title={`Add campaign for ${client.name}`}
+                              onClick={() => openCell(client, selectedDateKey)}
+                              aria-label={`Add campaign for ${client.name}`}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <div className={styles.detailItems}>
+                            {items.length === 0 ? (
+                              <p className={styles.emptyState} style={{ margin: 0 }}>No event</p>
+                            ) : (
+                              items.map((item) => (
                                 <div
                                   key={item.id || item._id}
                                   className={styles.chipWrap}
@@ -447,56 +440,12 @@ export default function GlobalMetaCalendar({ basePath = "staff" }) {
                                     ×
                                   </button>
                                 </div>
-                              ))}
-                            </div>
+                              ))
+                            )}
                           </div>
-                        );
-                      })
-                    )}
-
-                    {/* Allow adding to clients that have no entry yet */}
-                    {clients.filter((c) => {
-                      const cid = String(c.id || c._id);
-                      return (contentMap[`${cid}__${selectedDateKey}`] || []).length === 0;
-                    }).length > 0 && (
-                      <div className={styles.detailClientCard}>
-                        <div className={styles.detailClientHeader}>
-                          <span className={styles.detailClientName} style={{ cursor: "default", color: "var(--dash-muted,#656575)" }}>
-                            Add campaign for another client
-                          </span>
                         </div>
-                        <div style={{ paddingTop: 4 }}>
-                          <select
-                            className={styles.select}
-                            defaultValue=""
-                            onChange={(e) => {
-                              const id = e.target.value;
-                              if (!id) return;
-                              const client = clients.find(
-                                (c) => String(c.id || c._id) === id
-                              );
-                              if (client) openCell(client, selectedDateKey);
-                              e.target.value = "";
-                            }}
-                            aria-label="Select client to add campaign"
-                          >
-                            <option value="">Select client…</option>
-                            {clients
-                              .filter((c) => {
-                                const cid = String(c.id || c._id);
-                                return (
-                                  (contentMap[`${cid}__${selectedDateKey}`] || []).length === 0
-                                );
-                              })
-                              .map((c) => (
-                                <option key={c.id || c._id} value={c.id || c._id}>
-                                  {c.name}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })}
                   </>
                 );
               })()
