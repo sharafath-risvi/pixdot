@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthContext.jsx";
 import { useWorkspace } from "./WorkspaceContext.jsx";
 import { usePersonalNotes } from "../hooks/usePersonalNotes.js";
@@ -11,10 +11,25 @@ export function ClientPersonalProvider({ children }) {
   const { role, clientId } = useAuth();
   const { clients } = useWorkspace();
 
-  const currentClient = useMemo(() => {
-    if (role !== "client" || !clientId) return null;
-    return clients.find((c) => c.id === clientId) ?? null;
+  const [fetchedClient, setFetchedClient] = useState(null);
+
+  useEffect(() => {
+    if (role !== "client" || !clientId) return;
+    const existing = clients.find((c) => c.id === clientId);
+    if (existing) {
+      setFetchedClient(existing);
+      return;
+    }
+    
+    // On refresh, 'clients' is empty for a client. Fetch their profile directly.
+    import("../services/clientService.js").then(({ clientService }) => {
+      clientService.getClientById(clientId)
+        .then((data) => setFetchedClient(data))
+        .catch((err) => console.error("Failed to load client profile:", err));
+    });
   }, [role, clientId, clients]);
+
+  const currentClient = fetchedClient;
 
   const { notes, addNote, updateNote, deleteNote, loading, error, clearError } = usePersonalNotes(NOTES_STORAGE_KEY, clientId, "cn");
 
